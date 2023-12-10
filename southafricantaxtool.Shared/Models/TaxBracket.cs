@@ -1,7 +1,7 @@
-﻿using southafricantaxtool.CMD;
-using southafricantaxtool.CMD.Models;
+﻿using southafricantaxtool.Shared;
+using southafricantaxtool.Shared.Models;
 
-namespace southafricantaxtool.CMD.Models
+namespace southafricantaxtool.Shared.Models
 {
     public class TaxBracket
     {
