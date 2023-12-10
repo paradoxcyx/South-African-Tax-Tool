@@ -3,7 +3,7 @@ using southafricantaxtool.Shared.Models;
 
 
 Console.WriteLine("Loading Tax Bracket Data...");
-var taxBrackets = await TaxScraper.RetrieveTaxBrackets();
+var taxBrackets = await TaxScraper.RetrieveTaxData();
 
 bool ShouldContinue()
 {

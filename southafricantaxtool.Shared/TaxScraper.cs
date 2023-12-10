@@ -12,12 +12,15 @@ namespace southafricantaxtool.Shared
     {
         private const string sarsTaxBracketIndividualUrl = "https://www.sars.gov.za/tax-rates/income-tax/rates-of-tax-for-individuals/";
 
-        public static async Task<List<TaxBracket>> RetrieveTaxBrackets()
+        public static async Task<List<TaxBracket>> RetrieveTaxData()
         {
             var document = await ScrapeContent() ?? throw new InvalidDataException("Unable to scrape SARS tax brackets");
 
             var taxBracketYearNodes = document.DocumentNode.SelectNodes("//h2[strong[contains(., 'tax year')]]");
             var taxBracketNodes = document.DocumentNode.SelectNodes("//table[contains(@class, 'ms-rteTable') and .//th[contains(., 'Taxable income')]]");
+
+            var taxRebateNode = document.DocumentNode.SelectSingleNode("//table[contains(@class, 'ms-rteTable') and .//th[contains(., 'Tax Rebate​​')]]");
+            ExtractTaxRebates(taxRebateNode);
 
             List<TaxBracket> taxBrackets = [];
 
@@ -48,8 +51,11 @@ namespace southafricantaxtool.Shared
                 taxBrackets.Add(taxBracket);
             }
 
+            
+
             return taxBrackets;
         }
+
 
         /// <summary>
         /// Scraping the content of SARS' tax brackets (Year: 2017 - Present)
@@ -266,6 +272,83 @@ namespace southafricantaxtool.Shared
                 return null;
             }
             
+        }
+
+        private static void ExtractTaxRebates(HtmlNode table)
+        {
+            
+            var rows = table.SelectNodes(".//tr[@class='ms-rteTableEvenRow-default' or @class='ms-rteTableOddRow-default']");
+            var dataRows = table.SelectNodes(".//tr[@class='ms-rteTableEvenRow-default' or @class='ms-rteTableOddRow-default']").Skip(1);
+
+            // Extract headers (years)
+            var headerRow = rows[0];
+            var headers = headerRow.Elements("td").Skip(1).Select(th => th.InnerText.Trim());
+
+            for (int x=0; x<dataRows.Count(); x++)
+            {
+                var taxRebate = new TaxRebate();
+
+                switch(x)
+                {
+                    case 0:
+                        taxRebate.TaxRebateType = Enums.TaxRebateEnum.Primary;
+                        break;
+                    case 1:
+                        taxRebate.TaxRebateType = Enums.TaxRebateEnum.Secondary;
+                        break;
+                    case 2:
+                        taxRebate.TaxRebateType = Enums.TaxRebateEnum.Tertiary;
+                        break;
+
+                }
+
+            }
+            // Extract data rows
+            
+
+            var data = new List<List<decimal>>();
+
+            foreach (var row in dataRows)
+            {
+                var rowData = row.Elements("td").Skip(1).Select(td => ExtractDecimalValue(td.InnerText.Trim())).ToList();
+                data.Add(rowData);
+            }
+
+            // Display the extracted data
+            Console.WriteLine("Tax Rebate\t" + string.Join("\t", headers.Select(ExtractNumber)));
+            for (int i = 0; i < data.Count; i++)
+            {
+                var rowValues = data[i];
+                Console.WriteLine($"Row {i + 1}\t\t{string.Join("\t", rowValues)}");
+            }
+
+        }
+
+        private static decimal ExtractDecimalValue(string input)
+        {
+            var text = Regex.Replace(input, @"\s+", "");
+
+
+            // Use regular expression to extract decimal value
+            var match = Regex.Match(text, @"[\d,]+");
+            if (match.Success && decimal.TryParse(match.Value.Replace(",", ""), out decimal result))
+            {
+                return result;
+            }
+            return 0.0m;
+        }
+
+        private static int ExtractNumber(string input)
+        {
+            var text = Regex.Replace(input, @"\s+", "");
+
+            // Use regular expression to extract decimal value
+            var match = Regex.Match(text, @"[\d,]+");
+            if (match.Success && int.TryParse(match.Value, out int result))
+            {
+                return result;
+            }
+            return 0;
         }
     }
 }

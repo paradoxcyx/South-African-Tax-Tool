@@ -1,6 +1,6 @@
-﻿namespace southafricantaxtool.API.Models.RetrieveTaxableAmount
+﻿namespace southafricantaxtool.API.Models.RetrieveTaxData
 {
-    public class RetrieveTaxableAmountOutput
+    public class RetrieveTaxDataOutput
     {
         public decimal AnnualTax { get; set; }
         public decimal MonthlyTax { get; set; }

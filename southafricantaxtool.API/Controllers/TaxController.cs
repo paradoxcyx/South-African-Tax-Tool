@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using southafricantaxtool.API.Models.RetrieveTaxableAmount;
+using southafricantaxtool.API.Models.RetrieveTaxData;
 using southafricantaxtool.Shared;
 using southafricantaxtool.Shared.Models;
 
@@ -18,9 +18,9 @@ namespace southafricantaxtool.API.Controllers
         }
 
         [HttpPost("RetrieveTaxData")]
-        public async Task<IActionResult> RetrieveTaxData([FromBody] RetrieveTaxableAmountInput input)
+        public async Task<IActionResult> RetrieveTaxData([FromBody] RetrieveTaxDataInput input)
         {
-            var taxBrackets = await TaxScraper.RetrieveTaxBrackets();
+            var taxBrackets = await TaxScraper.RetrieveTaxData();
 
             decimal annualIncome = input.IsMonthly ? input.Income * 12 : input.Income;
 
@@ -54,7 +54,7 @@ namespace southafricantaxtool.API.Controllers
 
             var rule = bracket.Rule.BaseAmount.HasValue ? $"{bracket.Rule.BaseAmount.Value:F2} + {bracket.Rule.Percentage}% of taxable income above {bracket.IncomeFrom:F2}" : $"{bracket.Rule.Percentage}% of Taxable Income";
             
-            var output = new RetrieveTaxableAmountOutput
+            var output = new RetrieveTaxDataOutput
             {
                 AnnualTax = tax,
                 MonthlyTax = monthlyTax,
