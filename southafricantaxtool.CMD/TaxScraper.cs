@@ -1,9 +1,10 @@
 ﻿using HtmlAgilityPack;
 using System.Text;
 using System.Text.RegularExpressions;
-using SARSTaxBracketScraper.Models;
+using southafricantaxtool.CMD.Models;
+using System;
 
-namespace SARSTaxBracketScraper
+namespace southafricantaxtool.CMD
 {
     public class TaxScraper
     {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SARSTaxBracketScraper.Models
+namespace southafricantaxtool.CMD.Models
 {
     public class BracketRule
     {
