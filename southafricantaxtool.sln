@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34309.116
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SARSTaxBracketScraper", "SARSTaxBracketScraper.csproj", "{803B9932-F7CB-450D-B281-C18810C53217}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "southafricantaxtool.Console/southafricantaxtool.Console", "southafricantaxtool.Console/southafricantaxtool.Console.csproj", "{803B9932-F7CB-450D-B281-C18810C53217}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
