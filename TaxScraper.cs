@@ -48,6 +48,10 @@ namespace SARSTaxBracketScraper
             return taxBrackets;
         }
 
+        /// <summary>
+        /// Scraping the content of SARS' tax brackets (Year: 2017 - Present)
+        /// </summary>
+        /// <returns>Scraped HTML Document</returns>
         private static async Task<HtmlDocument?> ScrapeContent()
         {
             var web = new HtmlWeb();
@@ -91,9 +95,14 @@ namespace SARSTaxBracketScraper
 
         }
 
+        /// <summary>
+        /// Extracting the tax bracket rows of the given year's table
+        /// </summary>
+        /// <param name="table">The HTML Table (Node)</param>
+        /// <returns>List of brackets</returns>
         private static List<Bracket> ExtractTaxBrackets(HtmlNode table)
         {
-            List<Bracket> taxBrackets = new List<Bracket>();
+            List<Bracket> taxBrackets = [];
 
             // Select all rows in the table except the header and footer rows
             var rows = table.SelectNodes(".//tr[contains(@class, 'ms-rteTable') and not(contains(@class, 'Header'))]");
@@ -142,6 +151,11 @@ namespace SARSTaxBracketScraper
             return taxBrackets;
         }
 
+        /// <summary>
+        /// Extracting the Income Range (From and To) from html inner text
+        /// </summary>
+        /// <param name="inputText">The HTML inner text</param>
+        /// <returns>a Tuple that represents the Income From and To</returns>
         private static Tuple<decimal, decimal?>? ExtractIncomeRange(string inputText)
         {
             try
@@ -190,27 +204,9 @@ namespace SARSTaxBracketScraper
                 string? to = match.Groups[2].Success ? match.Groups[2].Value : null;
 
                 decimal fromValue = decimal.Parse(from);
-                decimal? toValue = !string.IsNullOrEmpty(to) ? decimal.Parse(to) : (decimal?)null;
+                decimal? toValue = !string.IsNullOrEmpty(to) ? decimal.Parse(to) : null;
 
                 return Tuple.Create(fromValue, toValue);
-
-
-                /*// Define the updated regex pattern
-                string pattern = @"(?<From>\d[\d\s]*)\s*(?:[-–]\s*(?<To>\d[\d\s]+)|and above)?$";
-
-                // Match the pattern in the input
-                Match match = Regex.Match(inputText, pattern);
-
-                // Extract "From" and "To" values
-                string from = Regex.Replace(match.Groups["From"].Value, @"\s", "");
-                string? to = match.Groups["To"].Success ? Regex.Replace(match.Groups["To"].Value, @"\s", "") : null;
-
-                // Convert values to decimal
-                decimal fromValue = decimal.Parse(from);
-                decimal? toValue = !string.IsNullOrEmpty(to) ? decimal.Parse(to) : (decimal?)null;
-
-
-                return Tuple.Create(fromValue, toValue);*/
             }
             catch (Exception ex)
             {
@@ -223,34 +219,36 @@ namespace SARSTaxBracketScraper
 
         }
 
+        /// <summary>
+        /// Number parser which removes white space and parses text to decimal
+        /// </summary>
+        /// <param name="numberString">The unparsed text</param>
+        /// <returns>The parsed number</returns>
         private static decimal ParseNumber(string numberString)
         {
             // Remove any spaces from the number string and parse as an integer
             return decimal.Parse(numberString.Replace(" ", ""));
         }
 
+        /// <summary>
+        /// Extracting the rules for a specific tax bracket
+        /// </summary>
+        /// <param name="inputText">The rules in plain HTML inner text</param>
+        /// <returns>A tuple that represents the rules</returns>
         private static Tuple<decimal?, int, decimal?> ExtractTaxBracketRules(string inputText)
         {
-            try
-            {
-                // Define the regex pattern for extracting base amount, percentage, and threshold
-                var pattern = @"(?:(\d+(?:\s*\d{3})*)\s*\+\s*)?(\d+)%\s*of\s*(?:taxable\s*income\s*above\s*(\d+(?:\s*\d{3})*)|$|each\s*R1)?";
+            // Define the regex pattern for extracting base amount, percentage, and threshold
+            var pattern = @"(?:(\d+(?:\s*\d{3})*)\s*\+\s*)?(\d+)%\s*of\s*(?:taxable\s*income\s*above\s*(\d+(?:\s*\d{3})*)|$|each\s*R1)?";
 
-                // Use regex to match the pattern
-                var match = Regex.Match(inputText, pattern);
+            // Use regex to match the pattern
+            var match = Regex.Match(inputText, pattern);
 
-                // Extract values from the match
-                decimal? baseAmount = match.Groups[1].Success ? ParseNumber(match.Groups[1].Value) : (int?)null;
-                int percentage = int.Parse(match.Groups[2].Value);
-                decimal? threshold = match.Groups[3].Success ? ParseNumber(match.Groups[3].Value) : (int?)null;
+            // Extract values from the match
+            decimal? baseAmount = match.Groups[1].Success ? ParseNumber(match.Groups[1].Value) : (int?)null;
+            int percentage = int.Parse(match.Groups[2].Value);
+            decimal? threshold = match.Groups[3].Success ? ParseNumber(match.Groups[3].Value) : (int?)null;
 
-                return Tuple.Create(baseAmount, percentage, threshold);
-            }
-            catch (Exception ex)
-            {
-                return null;
-            }
-
+            return Tuple.Create(baseAmount, percentage, threshold);
         }
     }
 }
