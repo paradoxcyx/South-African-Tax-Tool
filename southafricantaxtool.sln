@@ -5,6 +5,8 @@ VisualStudioVersion = 17.8.34309.116
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "southafricantaxtool.CMD", "southafricantaxtool.CMD\southafricantaxtool.CMD.csproj", "{803B9932-F7CB-450D-B281-C18810C53217}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "southafricantaxtool.API", "southafricantaxtool.API\southafricantaxtool.API.csproj", "{477B2E1F-F3E0-49DD-9942-8B345A4F015C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{803B9932-F7CB-450D-B281-C18810C53217}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{803B9932-F7CB-450D-B281-C18810C53217}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{803B9932-F7CB-450D-B281-C18810C53217}.Release|Any CPU.Build.0 = Release|Any CPU
+		{477B2E1F-F3E0-49DD-9942-8B345A4F015C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{477B2E1F-F3E0-49DD-9942-8B345A4F015C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{477B2E1F-F3E0-49DD-9942-8B345A4F015C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{477B2E1F-F3E0-49DD-9942-8B345A4F015C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
