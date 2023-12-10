@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using southafricantaxtool.API.Models.RetrieveTaxData;
 using southafricantaxtool.Shared;
 using southafricantaxtool.Shared.Models;
@@ -8,30 +7,25 @@ namespace southafricantaxtool.API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class TaxController : ControllerBase
+    public class TaxController(ILogger<TaxController> logger) : ControllerBase
     {
-        private readonly ILogger<TaxController> _logger;
-
-        public TaxController(ILogger<TaxController> logger)
-        {
-            _logger = logger;
-        }
+        private readonly ILogger<TaxController> _logger = logger;
 
         [HttpPost("RetrieveTaxData")]
         public async Task<IActionResult> RetrieveTaxData([FromBody] RetrieveTaxDataInput input)
         {
             var taxData = await TaxScraper.RetrieveTaxData();
 
-            decimal annualIncome = input.IsMonthly ? input.Income * 12 : input.Income;
+            var annualIncome = input.IsMonthly ? input.Income * 12 : input.Income;
 
             var taxBracket = taxData.Item1.FirstOrDefault(x =>
                 x.Start?.Year is { } startYear &&
                 x.End?.Year is { } endYear &&
-                startYear <= input.Year && endYear >= input.Year);
+                startYear <= input.TaxYear && endYear >= input.TaxYear);
 
             if (taxBracket == null)
             {
-                return BadRequest($"Cannot find tax bracket for year: {input.Year}");
+                return BadRequest($"Cannot find tax bracket for year: {input.TaxYear}");
             }
 
             var bracket = taxBracket.Brackets.FirstOrDefault(x =>
@@ -43,32 +37,34 @@ namespace southafricantaxtool.API.Controllers
                 return BadRequest($"Cannot find tax bracket for your income");
             }
 
-            TaxRebate? rebate = null;
+            TaxRebate? taxRebate;
 
-            if (input.Age >= 0 && input.Age <= 65)
+            switch (input.Age)
             {
-                rebate = taxData.Item2.FirstOrDefault(x => x.TaxRebateType == Shared.Enums.TaxRebateEnum.Primary);
+                case >= 0 and <= 65:
+                    taxRebate = taxData.Item2.FirstOrDefault(x => x.TaxRebateType == Shared.Enums.TaxRebateEnum.Primary);
+                    break;
+                case > 65 and <= 75:
+                    taxRebate = taxData.Item2.FirstOrDefault(x => x.TaxRebateType == Shared.Enums.TaxRebateEnum.Secondary);
+                    break;
+                case > 75:
+                    taxRebate = taxData.Item2.FirstOrDefault(x => x.TaxRebateType == Shared.Enums.TaxRebateEnum.Tertiary);
+                    break;
+                default:
+                    return BadRequest("Invalid age");
+            }
 
-            }
-            else if (input.Age > 65 && input.Age <= 75)
-            {
-                rebate = taxData.Item2.FirstOrDefault(x => x.TaxRebateType == Shared.Enums.TaxRebateEnum.Secondary);
-            }
-            else if (input.Age > 75)
-            {
-                rebate = taxData.Item2.FirstOrDefault(x => x.TaxRebateType == Shared.Enums.TaxRebateEnum.Tertiary);
-            }
-
+            var rebate = taxRebate!.Rebates.FirstOrDefault(x => x.Year == input.TaxYear);
 
 
             var tax = bracket.Rule.BaseAmount.HasValue
                 ? bracket.Rule.BaseAmount.Value + (annualIncome - bracket.IncomeFrom) * bracket.Rule.Percentage / 100
                 : Math.Round(annualIncome * ((decimal)bracket.Rule.Percentage / 100), 2);
 
-            var monthlyTax = Math.Round(tax / 12, 2);
+            var monthlyTax = Math.Round((tax-rebate!.Amount) / 12, 2);
             var monthlyNett = Math.Round(input.IsMonthly ? input.Income - monthlyTax : (input.Income / 12) - monthlyTax, 2);
 
-            var annualNett = annualIncome - tax;
+            var annualNett = annualIncome - (tax-rebate!.Amount);
 
             var rule = bracket.Rule.BaseAmount.HasValue ? $"{bracket.Rule.BaseAmount.Value:F2} + {bracket.Rule.Percentage}% of taxable income above {bracket.IncomeFrom:F2}" : $"{bracket.Rule.Percentage}% of Taxable Income";
             
@@ -79,14 +75,14 @@ namespace southafricantaxtool.API.Controllers
                 MonthlyNett = monthlyNett,
                 AnnualNett = annualNett,
                 Rule = rule,
-                FormulaSteps = BuildFormulaSteps(bracket, annualIncome, tax)
+                FormulaSteps = BuildFormulaSteps(bracket, annualIncome, tax, rebate!.Amount)
             };
 
             return Ok(output);
         }
 
 
-        private List<string> BuildFormulaSteps(Bracket bracket, decimal income, decimal tax)
+        private static List<string> BuildFormulaSteps(Bracket bracket, decimal income, decimal tax, decimal rebate)
         {
             var steps = new List<string>();
 
@@ -104,8 +100,12 @@ namespace southafricantaxtool.API.Controllers
                 steps.Add($"TAX = {income:F2} X {bracket.Rule.Percentage}%");
             }
 
-            steps.Add($"ANNUAL TAX = {tax:F2}");
-            steps.Add($"MONTHLY TAX = {tax / 12:F2}");
+            steps.Add($"TAX = {tax:F2} - {rebate:F2} (Rebate)");
+
+            var finalTax = tax - rebate;
+
+            steps.Add($"ANNUAL TAX = {finalTax:F2}");
+            steps.Add($"MONTHLY TAX = {finalTax / 12:F2}");
 
             return steps;
         }
