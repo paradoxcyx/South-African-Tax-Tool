@@ -3,7 +3,7 @@ using southafricantaxtool.Shared.Models;
 
 
 Console.WriteLine("Loading Tax Bracket Data...");
-var taxBrackets = await TaxScraper.RetrieveTaxData();
+var taxData = await TaxScraper.RetrieveTaxData();
 
 bool ShouldContinue()
 {
@@ -21,7 +21,7 @@ while (true)
         continue;
     }
 
-    var taxBracket = taxBrackets
+    var taxBracket = taxData.Item1
         .FirstOrDefault(x => x.Start?.Year is { } startYear && x.End?.Year is { } endYear && startYear <= year && endYear >= year);
 
     if (taxBracket == null)

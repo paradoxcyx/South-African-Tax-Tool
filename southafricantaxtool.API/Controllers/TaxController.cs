@@ -20,11 +20,11 @@ namespace southafricantaxtool.API.Controllers
         [HttpPost("RetrieveTaxData")]
         public async Task<IActionResult> RetrieveTaxData([FromBody] RetrieveTaxDataInput input)
         {
-            var taxBrackets = await TaxScraper.RetrieveTaxData();
+            var taxData = await TaxScraper.RetrieveTaxData();
 
             decimal annualIncome = input.IsMonthly ? input.Income * 12 : input.Income;
 
-            var taxBracket = taxBrackets.FirstOrDefault(x =>
+            var taxBracket = taxData.Item1.FirstOrDefault(x =>
                 x.Start?.Year is { } startYear &&
                 x.End?.Year is { } endYear &&
                 startYear <= input.Year && endYear >= input.Year);
@@ -42,6 +42,24 @@ namespace southafricantaxtool.API.Controllers
             {
                 return BadRequest($"Cannot find tax bracket for your income");
             }
+
+            TaxRebate? rebate = null;
+
+            if (input.Age >= 0 && input.Age <= 65)
+            {
+                rebate = taxData.Item2.FirstOrDefault(x => x.TaxRebateType == Shared.Enums.TaxRebateEnum.Primary);
+
+            }
+            else if (input.Age > 65 && input.Age <= 75)
+            {
+                rebate = taxData.Item2.FirstOrDefault(x => x.TaxRebateType == Shared.Enums.TaxRebateEnum.Secondary);
+            }
+            else if (input.Age > 75)
+            {
+                rebate = taxData.Item2.FirstOrDefault(x => x.TaxRebateType == Shared.Enums.TaxRebateEnum.Tertiary);
+            }
+
+
 
             var tax = bracket.Rule.BaseAmount.HasValue
                 ? bracket.Rule.BaseAmount.Value + (annualIncome - bracket.IncomeFrom) * bracket.Rule.Percentage / 100

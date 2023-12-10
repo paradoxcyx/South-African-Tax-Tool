@@ -11,8 +11,6 @@ namespace southafricantaxtool.Shared.Models
     {
         public TaxRebateEnum TaxRebateType { get; set; }
 
-        public int Year { get; set; }
-
-        public decimal Amount { get; set; }
+        public List<Rebate> Rebates { get; set; }
     }
 }

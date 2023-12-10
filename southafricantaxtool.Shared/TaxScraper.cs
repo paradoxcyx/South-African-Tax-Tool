@@ -12,7 +12,7 @@ namespace southafricantaxtool.Shared
     {
         private const string sarsTaxBracketIndividualUrl = "https://www.sars.gov.za/tax-rates/income-tax/rates-of-tax-for-individuals/";
 
-        public static async Task<List<TaxBracket>> RetrieveTaxData()
+        public static async Task<Tuple<List<TaxBracket>, List<TaxRebate>>> RetrieveTaxData()
         {
             var document = await ScrapeContent() ?? throw new InvalidDataException("Unable to scrape SARS tax brackets");
 
@@ -20,7 +20,8 @@ namespace southafricantaxtool.Shared
             var taxBracketNodes = document.DocumentNode.SelectNodes("//table[contains(@class, 'ms-rteTable') and .//th[contains(., 'Taxable income')]]");
 
             var taxRebateNode = document.DocumentNode.SelectSingleNode("//table[contains(@class, 'ms-rteTable') and .//th[contains(., 'Tax Rebate​​')]]");
-            ExtractTaxRebates(taxRebateNode);
+
+            var taxRebates = ExtractTaxRebates(taxRebateNode);
 
             List<TaxBracket> taxBrackets = [];
 
@@ -37,7 +38,7 @@ namespace southafricantaxtool.Shared
 
                     if (taxBracket.End.Value.Year == 2016)
                     {
-                        return taxBrackets;
+                        break;
                     }
                 }
 
@@ -53,7 +54,7 @@ namespace southafricantaxtool.Shared
 
             
 
-            return taxBrackets;
+            return Tuple.Create(taxBrackets, taxRebates);
         }
 
 
@@ -274,54 +275,48 @@ namespace southafricantaxtool.Shared
             
         }
 
-        private static void ExtractTaxRebates(HtmlNode table)
+        private static List<TaxRebate> ExtractTaxRebates(HtmlNode table)
         {
             
             var rows = table.SelectNodes(".//tr[@class='ms-rteTableEvenRow-default' or @class='ms-rteTableOddRow-default']");
-            var dataRows = table.SelectNodes(".//tr[@class='ms-rteTableEvenRow-default' or @class='ms-rteTableOddRow-default']").Skip(1);
+            var dataRows = table.SelectNodes(".//tr[@class='ms-rteTableEvenRow-default' or @class='ms-rteTableOddRow-default']").Skip(1).ToList();
 
             // Extract headers (years)
             var headerRow = rows[0];
-            var headers = headerRow.Elements("td").Skip(1).Select(th => th.InnerText.Trim());
+            var headers = headerRow.Elements("td").Skip(1).Select(th => th.InnerText.Trim()).ToList();
 
-            for (int x=0; x<dataRows.Count(); x++)
+            var taxRebates = new List<TaxRebate>
             {
-                var taxRebate = new TaxRebate();
-
-                switch(x)
+                new() {
+                    TaxRebateType = Enums.TaxRebateEnum.Primary
+                },
+                new()
                 {
-                    case 0:
-                        taxRebate.TaxRebateType = Enums.TaxRebateEnum.Primary;
-                        break;
-                    case 1:
-                        taxRebate.TaxRebateType = Enums.TaxRebateEnum.Secondary;
-                        break;
-                    case 2:
-                        taxRebate.TaxRebateType = Enums.TaxRebateEnum.Tertiary;
-                        break;
+                    TaxRebateType = Enums.TaxRebateEnum.Secondary
+                },
+                new()
+                {
+                    TaxRebateType = Enums.TaxRebateEnum.Tertiary
+                },
+            };
 
+
+
+
+            for (int x=0; x<dataRows.Count; x++)
+            {
+                var rowData = dataRows[x].Elements("td").Skip(1).ToList();
+                taxRebates[x].Rebates = new();
+
+                for (int y = 0; y<rowData.Count; y++)
+                {
+                    taxRebates[x].Rebates.Add(new Rebate { Year = ExtractNumber(headers[y]), Amount = ExtractDecimalValue(rowData[y].Element("span").InnerHtml) });
+                    
                 }
-
-            }
-            // Extract data rows
-            
-
-            var data = new List<List<decimal>>();
-
-            foreach (var row in dataRows)
-            {
-                var rowData = row.Elements("td").Skip(1).Select(td => ExtractDecimalValue(td.InnerText.Trim())).ToList();
-                data.Add(rowData);
             }
 
-            // Display the extracted data
-            Console.WriteLine("Tax Rebate\t" + string.Join("\t", headers.Select(ExtractNumber)));
-            for (int i = 0; i < data.Count; i++)
-            {
-                var rowValues = data[i];
-                Console.WriteLine($"Row {i + 1}\t\t{string.Join("\t", rowValues)}");
-            }
-
+            return taxRebates;
+           
         }
 
         private static decimal ExtractDecimalValue(string input)
