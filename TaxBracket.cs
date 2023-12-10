@@ -1,4 +1,5 @@
 ﻿using SARSTaxBracketScraper;
+using SARSTaxBracketScraper.Models;
 
 public class TaxBracket
 {

@@ -1,12 +1,7 @@
 ﻿using HtmlAgilityPack;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using static System.Net.Mime.MediaTypeNames;
+using SARSTaxBracketScraper.Models;
 
 namespace SARSTaxBracketScraper
 {
@@ -20,7 +15,7 @@ namespace SARSTaxBracketScraper
 
             var taxBracketYearNodes = document.DocumentNode.SelectNodes("//h2[strong[contains(., 'tax year')]]");
             var taxBracketNodes = document.DocumentNode.SelectNodes("//table[contains(@class, 'ms-rteTable') and .//th[contains(., 'Taxable income')]]");
-             
+
             List<TaxBracket> taxBrackets = [];
 
             for (int x = 0; x < taxBracketYearNodes.Count; x++)
@@ -40,10 +35,6 @@ namespace SARSTaxBracketScraper
                     }
                 }
 
-
-                
-
-
                 var brackets = taxBracketNodes[x];
 
                 if (brackets != null)
@@ -51,7 +42,7 @@ namespace SARSTaxBracketScraper
                     taxBracket.Brackets = ExtractTaxBrackets(brackets);
                 }
 
-                taxBrackets.Add(taxBracket);    
+                taxBrackets.Add(taxBracket);
             }
 
             return taxBrackets;
@@ -67,11 +58,14 @@ namespace SARSTaxBracketScraper
             return document;
         }
 
-
+        /// <summary>
+        /// Extracting the date range from html inner text
+        /// </summary>
+        /// <param name="text">Html inner text</param>
+        /// <returns>A tuple which represets the start and end date</returns>
         private static Tuple<DateTime, DateTime>? ExtractDates(string text)
         {
             // Define a regular expression pattern to match the date components
-            //string pattern = @"(?<startDay>\d+)\s(?<startMonth>\w+)\s(?<startYear>\d+)\s&#8211;\s(?<endDay>\d+)\s(?<endMonth>\w+)\s(?<endYear>\d+)";
             string pattern = @"(?<startMonth>\w+)\s(?<startYear>\d+)\s&#8211;\s(?<endDay>\d+)\s(?<endMonth>\w+)\s(?<endYear>\d+)";
 
             // Use Regex to match the pattern in the input text
@@ -90,11 +84,11 @@ namespace SARSTaxBracketScraper
                 DateTime startDateTime = new(startYear, DateTime.ParseExact(startMonth, "MMMM", System.Globalization.CultureInfo.InvariantCulture).Month, 1);
                 DateTime endDateTime = new(endYear, DateTime.ParseExact(endMonth, "MMMM", System.Globalization.CultureInfo.InvariantCulture).Month, endDay);
 
-                return Tuple.Create( startDateTime, endDateTime );
+                return Tuple.Create(startDateTime, endDateTime);
             }
-           
+
             return null;
-            
+
         }
 
         private static List<Bracket> ExtractTaxBrackets(HtmlNode table)
@@ -131,7 +125,7 @@ namespace SARSTaxBracketScraper
                             bracket.IncomeFrom = 0;
                             bracket.IncomeTo = 0;
                         }
-                        
+
 
                         string taxRate = columns[1].InnerText.Trim();
 
@@ -150,7 +144,7 @@ namespace SARSTaxBracketScraper
 
         private static Tuple<decimal, decimal?>? ExtractIncomeRange(string inputText)
         {
-            try 
+            try
             {
                 if (inputText.Contains("and"))
                 {
@@ -226,7 +220,7 @@ namespace SARSTaxBracketScraper
 
                 return null;
             }
-            
+
         }
 
         private static decimal ParseNumber(string numberString)
@@ -256,7 +250,7 @@ namespace SARSTaxBracketScraper
             {
                 return null;
             }
-            
+
         }
     }
 }

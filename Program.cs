@@ -1,4 +1,5 @@
 ﻿using SARSTaxBracketScraper;
+using SARSTaxBracketScraper.Models;
 
 Console.WriteLine("Loading Tax Bracket Data...");
 var taxBrackets = await TaxScraper.RetrieveTaxBrackets();
