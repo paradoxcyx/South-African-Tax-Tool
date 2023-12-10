@@ -5,12 +5,6 @@ using southafricantaxtool.Shared.Models;
 Console.WriteLine("Loading Tax Bracket Data...");
 var taxData = await TaxScraper.RetrieveTaxData();
 
-bool ShouldContinue()
-{
-    Console.Write("Go Again? (Y/N): ");
-    return Console.ReadLine()?.ToUpperInvariant() == "Y";
-}
-
 while (true)
 {
     Console.Write("Tax Bracket Year: ");
@@ -31,7 +25,7 @@ while (true)
         continue;
     }
 
-    decimal annualIncome = 0;
+    decimal annualIncome;
 
     Console.Write("Do you want to calculate by Monthly or Annual? (M/A): ");
     var monthlyOrAnnualInput = Console.ReadLine();
@@ -80,7 +74,14 @@ while (true)
     if (!ShouldContinue()) break;
 }
 
+return;
 
+
+bool ShouldContinue()
+{
+    Console.Write("Go Again? (Y/N): ");
+    return Console.ReadLine()?.ToUpperInvariant() == "Y";
+}
 
 void WriteError(string message)
 {
