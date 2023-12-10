@@ -17,8 +17,8 @@ namespace southafricantaxtool.API.Controllers
             _logger = logger;
         }
 
-        [HttpPost("RetrieveTaxableAmount")]
-        public async Task<IActionResult> RetrieveTaxableAmount([FromBody] RetrieveTaxableAmountInput input)
+        [HttpPost("RetrieveTaxData")]
+        public async Task<IActionResult> RetrieveTaxData([FromBody] RetrieveTaxableAmountInput input)
         {
             var taxBrackets = await TaxScraper.RetrieveTaxBrackets();
 
@@ -47,17 +47,20 @@ namespace southafricantaxtool.API.Controllers
                 ? bracket.Rule.BaseAmount.Value + (annualIncome - bracket.IncomeFrom) * bracket.Rule.Percentage / 100
                 : Math.Round(annualIncome * ((decimal)bracket.Rule.Percentage / 100), 2);
 
-            var monthlyTax = tax / 12;
-            var monthlyNett = input.IsMonthly ? input.Income - monthlyTax : (input.Income / 12) - monthlyTax;
+            var monthlyTax = Math.Round(tax / 12, 2);
+            var monthlyNett = Math.Round(input.IsMonthly ? input.Income - monthlyTax : (input.Income / 12) - monthlyTax, 2);
 
             var annualNett = annualIncome - tax;
 
+            var rule = bracket.Rule.BaseAmount.HasValue ? $"{bracket.Rule.BaseAmount.Value:F2} + {bracket.Rule.Percentage}% of taxable income above {bracket.IncomeFrom:F2}" : $"{bracket.Rule.Percentage}% of Taxable Income";
+            
             var output = new RetrieveTaxableAmountOutput
             {
                 AnnualTax = tax,
                 MonthlyTax = monthlyTax,
                 MonthlyNett = monthlyNett,
                 AnnualNett = annualNett,
+                Rule = rule,
                 FormulaSteps = BuildFormulaSteps(bracket, annualIncome, tax)
             };
 

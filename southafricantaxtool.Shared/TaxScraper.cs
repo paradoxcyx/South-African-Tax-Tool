@@ -6,6 +6,8 @@ using System;
 
 namespace southafricantaxtool.Shared
 {
+    //TODO: Implement tax rebate scraper
+
     public class TaxScraper
     {
         private const string sarsTaxBracketIndividualUrl = "https://www.sars.gov.za/tax-rates/income-tax/rates-of-tax-for-individuals/";
