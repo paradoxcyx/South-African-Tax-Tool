@@ -1,5 +1,6 @@
-﻿using SARSTaxBracketScraper;
-using SARSTaxBracketScraper.Models;
+﻿using southafricantaxtool.Shared;
+using southafricantaxtool.Shared.Models;
+
 
 Console.WriteLine("Loading Tax Bracket Data...");
 var taxBrackets = await TaxScraper.RetrieveTaxBrackets();

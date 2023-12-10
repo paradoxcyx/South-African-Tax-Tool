@@ -1,10 +1,13 @@
 ﻿using HtmlAgilityPack;
 using System.Text;
 using System.Text.RegularExpressions;
-using SARSTaxBracketScraper.Models;
+using southafricantaxtool.Shared.Models;
+using System;
 
-namespace SARSTaxBracketScraper
+namespace southafricantaxtool.Shared
 {
+    //TODO: Implement tax rebate scraper
+
     public class TaxScraper
     {
         private const string sarsTaxBracketIndividualUrl = "https://www.sars.gov.za/tax-rates/income-tax/rates-of-tax-for-individuals/";
@@ -226,8 +229,10 @@ namespace SARSTaxBracketScraper
         /// <returns>The parsed number</returns>
         private static decimal ParseNumber(string numberString)
         {
+            var text = Regex.Replace(numberString, @"\s+", "");
+
             // Remove any spaces from the number string and parse as an integer
-            return decimal.Parse(numberString.Replace(" ", ""));
+            return decimal.Parse(text);
         }
 
         /// <summary>
@@ -237,18 +242,30 @@ namespace SARSTaxBracketScraper
         /// <returns>A tuple that represents the rules</returns>
         private static Tuple<decimal?, int, decimal?> ExtractTaxBracketRules(string inputText)
         {
-            // Define the regex pattern for extracting base amount, percentage, and threshold
-            var pattern = @"(?:(\d+(?:\s*\d{3})*)\s*\+\s*)?(\d+)%\s*of\s*(?:taxable\s*income\s*above\s*(\d+(?:\s*\d{3})*)|$|each\s*R1)?";
+            try
+            {
+                // Define the regex pattern for extracting base amount, percentage, and threshold
+                var pattern = @"(?:(\d+(?:\s*\d{3})*)\s*\+\s*)?(\d+)%\s*of\s*(?:taxable\s*income\s*above\s*(\d+(?:\s*\d{3})*)|$|each\s*R1)?";
 
-            // Use regex to match the pattern
-            var match = Regex.Match(inputText, pattern);
+                // Use regex to match the pattern
+                var match = Regex.Match(inputText, pattern);
 
-            // Extract values from the match
-            decimal? baseAmount = match.Groups[1].Success ? ParseNumber(match.Groups[1].Value) : (int?)null;
-            int percentage = int.Parse(match.Groups[2].Value);
-            decimal? threshold = match.Groups[3].Success ? ParseNumber(match.Groups[3].Value) : (int?)null;
+                if (inputText.Contains("335 + 39%"))
+                {
+                    var s = "";
+                }
+                // Extract values from the match
+                decimal? baseAmount = match.Groups[1].Success ? ParseNumber(match.Groups[1].Value) : (int?)null;
+                int percentage = int.Parse(match.Groups[2].Value);
+                decimal? threshold = match.Groups[3].Success ? ParseNumber(match.Groups[3].Value) : (int?)null;
 
-            return Tuple.Create(baseAmount, percentage, threshold);
+                return Tuple.Create(baseAmount, percentage, threshold);
+            }
+            catch (Exception e)
+            {
+                return null;
+            }
+            
         }
     }
 }
