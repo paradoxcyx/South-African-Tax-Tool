@@ -3,25 +3,19 @@ using southafricantaxtool.Shared.Models;
 
 
 Console.WriteLine("Loading Tax Bracket Data...");
-var taxBrackets = await TaxScraper.RetrieveTaxBrackets();
-
-bool ShouldContinue()
-{
-    Console.Write("Go Again? (Y/N): ");
-    return Console.ReadLine()?.ToUpperInvariant() == "Y";
-}
+var taxData = await TaxScraper.RetrieveTaxData();
 
 while (true)
 {
     Console.Write("Tax Bracket Year: ");
-    if (!int.TryParse(Console.ReadLine(), out int year))
+    if (!int.TryParse(Console.ReadLine(), out var year))
     {
         Console.WriteLine("Invalid year entered! Try again.");
         if (!ShouldContinue()) break;
         continue;
     }
 
-    var taxBracket = taxBrackets
+    var taxBracket = taxData.TaxBrackets
         .FirstOrDefault(x => x.Start?.Year is { } startYear && x.End?.Year is { } endYear && startYear <= year && endYear >= year);
 
     if (taxBracket == null)
@@ -31,7 +25,7 @@ while (true)
         continue;
     }
 
-    decimal annualIncome = 0;
+    decimal annualIncome;
 
     Console.Write("Do you want to calculate by Monthly or Annual? (M/A): ");
     var monthlyOrAnnualInput = Console.ReadLine();
@@ -80,7 +74,14 @@ while (true)
     if (!ShouldContinue()) break;
 }
 
+return;
 
+
+bool ShouldContinue()
+{
+    Console.Write("Go Again? (Y/N): ");
+    return Console.ReadLine()?.ToUpperInvariant() == "Y";
+}
 
 void WriteError(string message)
 {

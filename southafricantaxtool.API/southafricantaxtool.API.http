@@ -1,6 +1,6 @@
 @southafricantaxtool.API_HostAddress = http://localhost:5200
 
-GET {{southafricantaxtool.API_HostAddress}}/tax/
+GET {{southafricantaxtool.API_HostAddress}}/tax/RetrieveTaxData
 Accept: application/json
 
 ###

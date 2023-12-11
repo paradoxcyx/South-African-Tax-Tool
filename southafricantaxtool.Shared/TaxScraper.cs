@@ -1,8 +1,6 @@
 ﻿using HtmlAgilityPack;
 using System.Text;
-using System.Text.RegularExpressions;
 using southafricantaxtool.Shared.Models;
-using System;
 
 namespace southafricantaxtool.Shared
 {
@@ -10,18 +8,22 @@ namespace southafricantaxtool.Shared
 
     public class TaxScraper
     {
-        private const string sarsTaxBracketIndividualUrl = "https://www.sars.gov.za/tax-rates/income-tax/rates-of-tax-for-individuals/";
+        private const string SarsTaxBracketIndividualUrl = "https://www.sars.gov.za/tax-rates/income-tax/rates-of-tax-for-individuals/";
 
-        public static async Task<List<TaxBracket>> RetrieveTaxBrackets()
+        public static async Task<TaxData> RetrieveTaxData()
         {
             var document = await ScrapeContent() ?? throw new InvalidDataException("Unable to scrape SARS tax brackets");
 
             var taxBracketYearNodes = document.DocumentNode.SelectNodes("//h2[strong[contains(., 'tax year')]]");
             var taxBracketNodes = document.DocumentNode.SelectNodes("//table[contains(@class, 'ms-rteTable') and .//th[contains(., 'Taxable income')]]");
 
+            var taxRebateNode = document.DocumentNode.SelectSingleNode("//table[contains(@class, 'ms-rteTable') and .//th[contains(., 'Tax Rebate​​')]]");
+
+            var taxRebates = ExtractTaxRebates(taxRebateNode);
+
             List<TaxBracket> taxBrackets = [];
 
-            for (int x = 0; x < taxBracketYearNodes.Count; x++)
+            for (var x = 0; x < taxBracketYearNodes.Count; x++)
             {
                 var taxBracket = new TaxBracket();
 
@@ -32,9 +34,11 @@ namespace southafricantaxtool.Shared
                     taxBracket.Start = datesTuple.Item1;
                     taxBracket.End = datesTuple.Item2;
 
+                    //YEAR LIMITATION 
+                    //TODO: Investigate scraping limitations when trying to scrape data before 2016
                     if (taxBracket.End.Value.Year == 2016)
                     {
-                        return taxBrackets;
+                        break;
                     }
                 }
 
@@ -48,8 +52,15 @@ namespace southafricantaxtool.Shared
                 taxBrackets.Add(taxBracket);
             }
 
-            return taxBrackets;
+
+            var taxData = new TaxData
+            {
+                TaxBrackets = taxBrackets,
+                TaxRebates = taxRebates
+            };
+            return taxData;
         }
+
 
         /// <summary>
         /// Scraping the content of SARS' tax brackets (Year: 2017 - Present)
@@ -61,7 +72,7 @@ namespace southafricantaxtool.Shared
             web.AutoDetectEncoding = false;
             web.OverrideEncoding = Encoding.UTF8;
 
-            var document = await web.LoadFromWebAsync(sarsTaxBracketIndividualUrl);
+            var document = await web.LoadFromWebAsync(SarsTaxBracketIndividualUrl);
             return document;
         }
 
@@ -72,29 +83,23 @@ namespace southafricantaxtool.Shared
         /// <returns>A tuple which represets the start and end date</returns>
         private static Tuple<DateTime, DateTime>? ExtractDates(string text)
         {
-            // Define a regular expression pattern to match the date components
-            string pattern = @"(?<startMonth>\w+)\s(?<startYear>\d+)\s&#8211;\s(?<endDay>\d+)\s(?<endMonth>\w+)\s(?<endYear>\d+)";
-
             // Use Regex to match the pattern in the input text
-            Match match = Regex.Match(text, pattern);
+            var match = RegexPatterns.DatesExtractionRegex().Match(text);
 
-            if (match.Success)
-            {
-                // Retrieve matched groups
-                string startMonth = match.Groups["startMonth"].Value;
-                int startYear = int.Parse(match.Groups["startYear"].Value);
-                int endDay = int.Parse(match.Groups["endDay"].Value);
-                string endMonth = match.Groups["endMonth"].Value;
-                int endYear = int.Parse(match.Groups["endYear"].Value);
+            if (!match.Success) return null;
+            
+            // Retrieve matched groups
+            var startMonth = match.Groups["startMonth"].Value;
+            var startYear = int.Parse(match.Groups["startYear"].Value);
+            var endDay = int.Parse(match.Groups["endDay"].Value);
+            var endMonth = match.Groups["endMonth"].Value;
+            var endYear = int.Parse(match.Groups["endYear"].Value);
 
-                // Convert month names to month numbers
-                DateTime startDateTime = new(startYear, DateTime.ParseExact(startMonth, "MMMM", System.Globalization.CultureInfo.InvariantCulture).Month, 1);
-                DateTime endDateTime = new(endYear, DateTime.ParseExact(endMonth, "MMMM", System.Globalization.CultureInfo.InvariantCulture).Month, endDay);
+            // Convert month names to month numbers
+            DateTime startDateTime = new(startYear, DateTime.ParseExact(startMonth, "MMMM", System.Globalization.CultureInfo.InvariantCulture).Month, 1);
+            DateTime endDateTime = new(endYear, DateTime.ParseExact(endMonth, "MMMM", System.Globalization.CultureInfo.InvariantCulture).Month, endDay);
 
-                return Tuple.Create(startDateTime, endDateTime);
-            }
-
-            return null;
+            return Tuple.Create(startDateTime, endDateTime);
 
         }
 
@@ -110,45 +115,41 @@ namespace southafricantaxtool.Shared
             // Select all rows in the table except the header and footer rows
             var rows = table.SelectNodes(".//tr[contains(@class, 'ms-rteTable') and not(contains(@class, 'Header'))]");
 
-            if (rows != null)
+            if (rows == null) return taxBrackets;
+            
+            foreach (var row in rows)
             {
-                foreach (var row in rows)
+                // Extract the columns (td elements) from each row
+                var columns = row.SelectNodes("td");
+
+                if (columns is not { Count: 2 }) continue;
+                
+                var bracket = new Bracket();
+
+                // Extract the text content from the columns
+                var incomeRange = columns[0].InnerText.Trim();
+
+
+                var incomeRangeValues = ExtractIncomeRange(incomeRange);
+
+                if (incomeRangeValues != null)
                 {
-                    // Extract the columns (td elements) from each row
-                    var columns = row.SelectNodes("td");
-
-                    if (columns != null && columns.Count == 2)
-                    {
-                        var bracket = new Bracket();
-
-                        // Extract the text content from the columns
-                        string incomeRange = columns[0].InnerText.Trim();
-
-
-                        var incomeRangeValues = ExtractIncomeRange(incomeRange);
-
-                        if (incomeRangeValues != null)
-                        {
-                            bracket.IncomeFrom = incomeRangeValues.Item1;
-                            bracket.IncomeTo = incomeRangeValues.Item2;
-                        }
-                        else
-                        {
-                            bracket.IncomeFrom = 0;
-                            bracket.IncomeTo = 0;
-                        }
-
-
-                        string taxRate = columns[1].InnerText.Trim();
-
-                        var bracketRule = ExtractTaxBracketRules(taxRate);
-
-                        bracket.Rule = new BracketRule { BaseAmount = bracketRule.Item1, Percentage = bracketRule.Item2, Threshold = bracketRule.Item3 };
-
-                        // Add the extracted data to the list
-                        taxBrackets.Add(bracket);
-                    }
+                    bracket.IncomeFrom = incomeRangeValues.Item1;
+                    bracket.IncomeTo = incomeRangeValues.Item2;
                 }
+                else
+                {
+                    bracket.IncomeFrom = 0;
+                    bracket.IncomeTo = 0;
+                }
+
+
+                var taxRate = columns[1].InnerText.Trim();
+
+                bracket.Rule = ExtractTaxBracketRules(taxRate);
+
+                // Add the extracted data to the list
+                taxBrackets.Add(bracket);
             }
 
             return taxBrackets;
@@ -163,15 +164,11 @@ namespace southafricantaxtool.Shared
         {
             try
             {
-                if (inputText.Contains("and"))
-                {
-                    var s = "";
-                }
                 if (inputText.Contains("and above", StringComparison.InvariantCultureIgnoreCase))
                 {
                     inputText = inputText.Replace("and above", string.Empty).Replace(" ", string.Empty).Trim();
 
-                    decimal.TryParse(inputText, out decimal rangeFrom);
+                    decimal.TryParse(inputText, out var rangeFrom);
                     decimal? rangeTo = null;
 
                     return Tuple.Create(rangeFrom, rangeTo);
@@ -179,34 +176,27 @@ namespace southafricantaxtool.Shared
                 }
 
                 //Cleaning
-                inputText = Regex.Replace(inputText, "&#8211;", "|").Trim();
+                inputText = RegexPatterns.ReplaceUnknownUnicodeRegex().Replace(inputText, "|").Trim();
 
-                // Use a regular expression to match any dash character and replace with a period.
-                string pattern2 = "[\\p{Pd}]";  // \p{Pd} matches any kind of dash
-                string replacement = "|";
-                Regex cleaningRegex = new Regex(pattern2);
+                const string replacement = "|";
 
-                string cleanedInputText = cleaningRegex.Replace(inputText, replacement).Replace(" ", string.Empty).Trim();
-
-                // Define the regex pattern
-                string pattern = @"^[\s]*(\d+)[\s]*\|[\s]*(\d+)[\s]*$";
-
-
-                // Create a Regex object
-                Regex regex = new(pattern, RegexOptions.IgnorePatternWhitespace);
-
+                var cleanedInputText = RegexPatterns.ReplaceAllHyphensAndDashesRegex()
+                    .Replace(inputText, replacement)
+                    .Replace(" ", string.Empty).Trim();
+                
                 // Match the input against the regex
-                Match match = regex.Match(cleanedInputText);
+                var match = RegexPatterns.ExtractIncomeRangeRegex()
+                    .Match(cleanedInputText);
 
                 if (match.Groups.Count == 1)
                 {
                     Console.WriteLine(cleanedInputText);
                 }
 
-                string from = match.Groups[1].Value;
-                string? to = match.Groups[2].Success ? match.Groups[2].Value : null;
+                var from = match.Groups[1].Value;
+                var to = match.Groups[2].Success ? match.Groups[2].Value : null;
 
-                decimal fromValue = decimal.Parse(from);
+                var fromValue = decimal.Parse(from);
                 decimal? toValue = !string.IsNullOrEmpty(to) ? decimal.Parse(to) : null;
 
                 return Tuple.Create(fromValue, toValue);
@@ -229,7 +219,7 @@ namespace southafricantaxtool.Shared
         /// <returns>The parsed number</returns>
         private static decimal ParseNumber(string numberString)
         {
-            var text = Regex.Replace(numberString, @"\s+", "");
+            var text = RegexPatterns.ReplaceWhitespacesRegex().Replace(numberString,"");
 
             // Remove any spaces from the number string and parse as an integer
             return decimal.Parse(text);
@@ -240,32 +230,121 @@ namespace southafricantaxtool.Shared
         /// </summary>
         /// <param name="inputText">The rules in plain HTML inner text</param>
         /// <returns>A tuple that represents the rules</returns>
-        private static Tuple<decimal?, int, decimal?> ExtractTaxBracketRules(string inputText)
+        private static BracketRule ExtractTaxBracketRules(string inputText)
         {
+            decimal? baseAmount = null;
+            var percentage = 0;
+            decimal? threshold = null;
+            
             try
             {
-                // Define the regex pattern for extracting base amount, percentage, and threshold
-                var pattern = @"(?:(\d+(?:\s*\d{3})*)\s*\+\s*)?(\d+)%\s*of\s*(?:taxable\s*income\s*above\s*(\d+(?:\s*\d{3})*)|$|each\s*R1)?";
-
                 // Use regex to match the pattern
-                var match = Regex.Match(inputText, pattern);
+                var match = RegexPatterns.TaxBracketRuleExtractionRegex().Match(inputText);
 
-                if (inputText.Contains("335 + 39%"))
-                {
-                    var s = "";
-                }
                 // Extract values from the match
-                decimal? baseAmount = match.Groups[1].Success ? ParseNumber(match.Groups[1].Value) : (int?)null;
-                int percentage = int.Parse(match.Groups[2].Value);
-                decimal? threshold = match.Groups[3].Success ? ParseNumber(match.Groups[3].Value) : (int?)null;
+                baseAmount = match.Groups[1].Success ? ParseNumber(match.Groups[1].Value) : null;
+                percentage = int.Parse(match.Groups[2].Value);
+                threshold = match.Groups[3].Success ? ParseNumber(match.Groups[3].Value) : null;
 
-                return Tuple.Create(baseAmount, percentage, threshold);
+                return new BracketRule
+                {
+                    BaseAmount = baseAmount,
+                    Percentage = percentage,
+                    Threshold = threshold
+                };
             }
             catch (Exception e)
             {
-                return null;
+                return new BracketRule
+                {
+                    BaseAmount = baseAmount,
+                    Percentage = percentage,
+                    Threshold = threshold
+                };
             }
             
+        }
+
+        /// <summary>
+        /// Extracting all tax rebates
+        /// </summary>
+        /// <param name="table">Html table node</param>
+        /// <returns>A list of tax rebates</returns>
+        private static List<TaxRebate> ExtractTaxRebates(HtmlNode table)
+        {
+            
+            var rows = table.SelectNodes(".//tr[@class='ms-rteTableEvenRow-default' or @class='ms-rteTableOddRow-default']");
+            var dataRows = table.SelectNodes(".//tr[@class='ms-rteTableEvenRow-default' or @class='ms-rteTableOddRow-default']").Skip(1).ToList();
+
+            // Extract headers (years)
+            var headerRow = rows[0];
+            var headers = headerRow.Elements("td").Skip(1).Select(th => th.InnerText.Trim()).ToList();
+
+            var taxRebates = new List<TaxRebate>
+            {
+                new() {
+                    TaxRebateType = Enums.TaxRebateEnum.Primary
+                },
+                new()
+                {
+                    TaxRebateType = Enums.TaxRebateEnum.Secondary
+                },
+                new()
+                {
+                    TaxRebateType = Enums.TaxRebateEnum.Tertiary
+                },
+            };
+
+            for (var x=0; x<dataRows.Count; x++)
+            {
+                var rowData = dataRows[x].Elements("td").Skip(1).ToList();
+                taxRebates[x].Rebates = [];
+
+                for (var y = 0; y<rowData.Count; y++)
+                {
+                    taxRebates[x].Rebates.Add(new Rebate { Year = ExtractNumber(headers[y]), Amount = ExtractDecimalValue(rowData[y].Element("span").InnerHtml) });
+                    
+                }
+            }
+
+            return taxRebates;
+           
+        }
+
+        /// <summary>
+        /// Extracting a decimal value from scraped html
+        /// </summary>
+        /// <param name="input">scraped html</param>
+        /// <returns>decimal value</returns>
+        private static decimal ExtractDecimalValue(string input)
+        {
+            var text = RegexPatterns.ReplaceWhitespacesRegex().Replace(input, "");
+
+            // Use regular expression to extract decimal value
+            var match = RegexPatterns.ExtractDigitsRegex().Match(text);
+            if (match.Success && decimal.TryParse(match.Value.Replace(",", ""), out decimal result))
+            {
+                return result;
+            }
+            return 0.0m;
+        }
+
+        /// <summary>
+        /// Extracting a number value from scraped html
+        /// </summary>
+        /// <param name="input">scraped html</param>
+        /// <returns>number value</returns>
+        private static int ExtractNumber(string input)
+        {
+            var text = RegexPatterns.ReplaceWhitespacesRegex().Replace(input, "");
+
+            // Use regular expression to extract decimal value
+            var match = RegexPatterns.ExtractDigitsRegex().Match(text);
+            if (match.Success && int.TryParse(match.Value, out var result))
+            {
+                return result;
+            }
+            return 0;
         }
     }
 }
