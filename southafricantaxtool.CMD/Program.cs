@@ -8,14 +8,14 @@ var taxData = await TaxScraper.RetrieveTaxData();
 while (true)
 {
     Console.Write("Tax Bracket Year: ");
-    if (!int.TryParse(Console.ReadLine(), out int year))
+    if (!int.TryParse(Console.ReadLine(), out var year))
     {
         Console.WriteLine("Invalid year entered! Try again.");
         if (!ShouldContinue()) break;
         continue;
     }
 
-    var taxBracket = taxData.Item1
+    var taxBracket = taxData.TaxBrackets
         .FirstOrDefault(x => x.Start?.Year is { } startYear && x.End?.Year is { } endYear && startYear <= year && endYear >= year);
 
     if (taxBracket == null)
