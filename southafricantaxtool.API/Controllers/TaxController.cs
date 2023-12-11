@@ -4,6 +4,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
 using southafricantaxtool.API.Models;
 using southafricantaxtool.API.Models.RetrieveTaxData;
+using southafricantaxtool.API.Models.RetrieveTaxMetrics;
 using southafricantaxtool.Shared;
 using southafricantaxtool.Shared.Models;
 
@@ -13,9 +14,6 @@ namespace southafricantaxtool.API.Controllers
     [Route("[controller]")]
     public class TaxController(ILogger<TaxController> logger, IDistributedCache cache) : ControllerBase
     {
-        private readonly ILogger<TaxController> _logger = logger;
-        private readonly IDistributedCache _cache = cache;
-        
         /// <summary>
         /// Finding tax bracket for specified year
         /// </summary>
@@ -93,11 +91,11 @@ namespace southafricantaxtool.API.Controllers
         {
             TaxData? taxData;
 
-            var s = await _cache.GetAsync("taxdata");
+            var s = await cache.GetAsync("taxdata");
             if (s == null)
             {
                 taxData = await TaxScraper.RetrieveTaxData();
-                await _cache.SetAsync("taxdata", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(taxData)), new DistributedCacheEntryOptions
+                await cache.SetAsync("taxdata", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(taxData)), new DistributedCacheEntryOptions
                 {
                     AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(30)
                 });
@@ -166,7 +164,7 @@ namespace southafricantaxtool.API.Controllers
             }
             catch (InvalidOperationException op)
             {
-                _logger.LogError(op.Message);
+                logger.LogError(op.Message);
 
                 return BadRequest(new GenericResponseModel<RetrieveTaxDataOutput>
                 {
@@ -176,6 +174,61 @@ namespace southafricantaxtool.API.Controllers
             }
         }
 
+        [HttpPost("RetrieveTaxMetrics")]
+        public async Task<IActionResult> RetrieveTaxMetrics([FromBody] RetrieveTaxMetricsInput input)
+        {
+            var taxData = await GetTaxData();
+            
+            var monthlyIncome = input.IsMonthly ? input.Income : input.Income / 12;
+            var annualIncome = input.IsMonthly ? input.Income * 12 : input.Income;
+
+            var years = taxData.TaxBrackets.Where(x => x.End.HasValue).Select(x => x.End!.Value.Year).OrderByDescending(o => o).ToList();
+
+            var metrics = new List<RetrieveTaxMetricsOutput>();
+            
+            for (var y = 0; y < years.Count; y++)
+            {
+                var taxBracket = FindTaxBracketForYear(taxData.TaxBrackets, years[y]);
+                var bracket = FindTaxBracketForIncome(taxBracket.Brackets, annualIncome);
+                var rebate = FindTaxRebateForAgeAndYear(taxData.TaxRebates, input.Age, years[y]);
+
+                var annualTax = bracket.Rule.BaseAmount.HasValue
+                    ? bracket.Rule.BaseAmount.Value + (annualIncome - bracket.IncomeFrom) * bracket.Rule.Percentage / 100
+                    : Math.Round(annualIncome * ((decimal)bracket.Rule.Percentage / 100), 2);
+
+                var monthlyTax = Math.Round((annualTax - rebate.Amount) / 12, 2);
+
+                var monthlyNett = Math.Round(monthlyIncome - monthlyTax, 2);
+
+                var annualNett = annualIncome - (annualTax - rebate.Amount);
+
+                if (y != 0)
+                {
+                    var lookupMetric = metrics[y - 1];
+                    lookupMetric.DifferenceFromPreviousYearPercentage = Math.Round((lookupMetric.AnnualTax - annualTax) / annualTax * 100, 2);
+                }
+
+                var metric = new RetrieveTaxMetricsOutput
+                {
+                    Year = years[y],
+                    AnnualTax = annualTax,
+                    MonthlyTax = monthlyTax,
+                    MonthlyNett = monthlyNett,
+                    AnnualNett = annualNett,
+                };
+
+                metrics.Add(metric);
+            }
+
+            var response = new GenericResponseModel<List<RetrieveTaxMetricsOutput>>
+            {
+                Success = true,
+                Message = "Tax metrics retrieved successfully",
+                Data = metrics
+            };
+            
+            return Ok(response);
+        }
 
         private static List<string> BuildFormulaSteps(Bracket bracket, decimal income, decimal tax, decimal rebate)
         {
