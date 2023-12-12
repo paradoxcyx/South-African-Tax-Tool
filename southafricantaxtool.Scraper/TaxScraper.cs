@@ -1,11 +1,9 @@
 ﻿using HtmlAgilityPack;
 using System.Text;
-using southafricantaxtool.Shared.Models;
+using southafricantaxtool.Scraper.Models;
 
-namespace southafricantaxtool.Shared
-{
-    //TODO: Implement tax rebate scraper
-
+namespace southafricantaxtool.Scraper
+{ 
     public class TaxScraper
     {
         private const string SarsTaxBracketIndividualUrl = "https://www.sars.gov.za/tax-rates/income-tax/rates-of-tax-for-individuals/";

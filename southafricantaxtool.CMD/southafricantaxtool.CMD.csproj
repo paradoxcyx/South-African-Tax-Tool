@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\southafricantaxtool.Shared\southafricantaxtool.Shared.csproj" />
+    <ProjectReference Include="..\southafricantaxtool.Scraper\southafricantaxtool.Scraper.csproj" />
   </ItemGroup>
 
 </Project>
