@@ -17,9 +17,6 @@ namespace southafricantaxtool.API.Controllers
     [Route("[controller]")]
     public class TaxController(ILogger<TaxController> logger, ITaxCalculationService taxCalculationService, ITaxLookupService taxLookupService, ITaxService taxService) : ControllerBase
     {
-
-        
-        
         [HttpPost("RetrieveTaxData")]
         public async Task<IActionResult> RetrieveTaxData([FromBody] RetrieveTaxDataInput input)
         {
@@ -126,6 +123,5 @@ namespace southafricantaxtool.API.Controllers
 
             return Ok(response);
         }
-
     }
 }
