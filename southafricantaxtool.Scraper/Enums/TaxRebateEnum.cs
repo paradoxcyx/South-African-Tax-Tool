@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace southafricantaxtool.Shared.Enums
+namespace southafricantaxtool.Scraper.Enums
 {
     public enum TaxRebateEnum
     {

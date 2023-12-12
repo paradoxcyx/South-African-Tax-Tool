@@ -1,5 +1,5 @@
-﻿using southafricantaxtool.Shared;
-using southafricantaxtool.Shared.Models;
+﻿using southafricantaxtool.Scraper;
+using southafricantaxtool.Scraper.Models;
 
 
 Console.WriteLine("Loading Tax Bracket Data...");

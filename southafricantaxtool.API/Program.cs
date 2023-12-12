@@ -1,3 +1,5 @@
+using southafricantaxtool.BL;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -12,6 +14,8 @@ builder.Services.AddStackExchangeRedisCache(options =>
     options.InstanceName = builder.Configuration["RedisCache:InstanceName"];
     options.Configuration = builder.Configuration["RedisCache:Connection"];
 });
+
+builder.Services.AddTaxServices();
 
 var app = builder.Build();
 
