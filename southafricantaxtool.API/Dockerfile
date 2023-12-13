@@ -9,11 +9,8 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["southafricantaxtool.API/southafricantaxtool.API.csproj", "southafricantaxtool.API/"]
-COPY ["southafricantaxtool.BL/southafricantaxtool.BL.csproj", "southafricantaxtool.BL/"]
-COPY ["southafricantaxtool.Scraper/southafricantaxtool.Scraper.csproj", "southafricantaxtool.Scraper/"]
-RUN dotnet restore "./southafricantaxtool.API/./southafricantaxtool.API.csproj"
 COPY . .
+RUN dotnet restore "./southafricantaxtool.API/./southafricantaxtool.API.csproj"
 WORKDIR "/src/southafricantaxtool.API"
 RUN dotnet build "./southafricantaxtool.API.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
