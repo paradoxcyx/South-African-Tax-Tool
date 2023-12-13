@@ -1,15 +1,10 @@
-﻿using System.Text;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
+﻿using Microsoft.AspNetCore.Mvc;
 using southafricantaxtool.API.Models;
 using southafricantaxtool.API.Models.RetrieveTaxData;
 using southafricantaxtool.API.Models.RetrieveTaxMetrics;
 using southafricantaxtool.BL.Services.Tax;
 using southafricantaxtool.BL.Services.TaxLookup;
 using southafricantaxtool.BL.TaxCalculation;
-using southafricantaxtool.Scraper;
-using southafricantaxtool.Scraper.Models;
 
 namespace southafricantaxtool.API.Controllers
 {
@@ -58,8 +53,6 @@ namespace southafricantaxtool.API.Controllers
             }
             catch (InvalidOperationException op)
             {
-                logger.LogError(op.Message);
-
                 return BadRequest(new GenericResponseModel<RetrieveTaxDataOutput>
                 {
                     Success = false,
@@ -71,57 +64,70 @@ namespace southafricantaxtool.API.Controllers
         [HttpPost("RetrieveTaxMetrics")]
         public async Task<IActionResult> RetrieveTaxMetrics([FromBody] RetrieveTaxMetricsInput input)
         {
-            var taxData = await taxService.GetTaxDataAsync();
-    
-            var monthlyIncome = input.IsMonthly ? input.Income : input.Income / 12;
-            var annualIncome = input.IsMonthly ? input.Income * 12 : input.Income;
-
-            var years = taxData.TaxBrackets
-                .Where(x => x.End.HasValue)
-                .Select(x => x.End!.Value.Year)
-                .OrderByDescending(o => o)
-                .ToList();
-
-            var metrics = new List<RetrieveTaxMetricsOutput>();
-            RetrieveTaxMetricsOutput? previousMetric = null;
-
-            foreach (var year in years)
+            try
             {
-                var taxBracket = taxLookupService.FindTaxBracketForYear(taxData.TaxBrackets, year);
-                var bracket = taxLookupService.FindTaxBracketForIncome(taxBracket.Brackets, annualIncome);
-                var rebate = taxLookupService.FindTaxRebateForAgeAndYear(taxData.TaxRebates, input.Age, year);
+                var taxData = await taxService.GetTaxDataAsync();
 
-                var annualTax = taxCalculationService.CalculateAnnualTax(bracket, annualIncome);
-                var monthlyTax = taxCalculationService.CalculateMonthlyTax(annualTax, rebate.Amount);
-                var monthlyNett = taxCalculationService.CalculateMonthlyNett(monthlyIncome, monthlyTax);
-                var annualNett = taxCalculationService.CalculateAnnualNett(annualIncome, annualTax, rebate.Amount);
+                var monthlyIncome = input.IsMonthly ? input.Income : input.Income / 12;
+                var annualIncome = input.IsMonthly ? input.Income * 12 : input.Income;
 
-                var metric = new RetrieveTaxMetricsOutput
+                var years = taxData.TaxBrackets
+                    .Where(x => x.End.HasValue)
+                    .Select(x => x.End!.Value.Year)
+                    .OrderByDescending(o => o)
+                    .ToList();
+
+                var metrics = new List<RetrieveTaxMetricsOutput>();
+                RetrieveTaxMetricsOutput? previousMetric = null;
+
+                foreach (var year in years)
                 {
-                    Year = year,
-                    AnnualTax = annualTax,
-                    MonthlyTax = monthlyTax,
-                    MonthlyNett = monthlyNett,
-                    AnnualNett = annualNett,
-                };
+                    var taxBracket = taxLookupService.FindTaxBracketForYear(taxData.TaxBrackets, year);
+                    var bracket = taxLookupService.FindTaxBracketForIncome(taxBracket.Brackets, annualIncome);
+                    var rebate = taxLookupService.FindTaxRebateForAgeAndYear(taxData.TaxRebates, input.Age, year);
 
-                if (previousMetric != null)
-                {
-                    metric.DifferenceFromPreviousYearPercentage = Math.Round((previousMetric.AnnualTax - annualTax) / annualTax * 100, 2);
+                    var annualTax = taxCalculationService.CalculateAnnualTax(bracket, annualIncome);
+                    var monthlyTax = taxCalculationService.CalculateMonthlyTax(annualTax, rebate.Amount);
+                    var monthlyNett = taxCalculationService.CalculateMonthlyNett(monthlyIncome, monthlyTax);
+                    var annualNett = taxCalculationService.CalculateAnnualNett(annualIncome, annualTax, rebate.Amount);
+
+                    var metric = new RetrieveTaxMetricsOutput
+                    {
+                        Year = year,
+                        AnnualTax = annualTax,
+                        MonthlyTax = monthlyTax,
+                        MonthlyNett = monthlyNett,
+                        AnnualNett = annualNett,
+                    };
+
+                    if (previousMetric != null)
+                    {
+                        metric.DifferenceFromPreviousYearPercentage =
+                            Math.Round((previousMetric.AnnualTax - annualTax) / annualTax * 100, 2);
+                    }
+
+                    metrics.Add(metric);
+                    previousMetric = metric;
                 }
 
-                metrics.Add(metric);
-                previousMetric = metric;
+                var response = new GenericResponseModel<List<RetrieveTaxMetricsOutput>>
+                {
+                    Success = true,
+                    Message = "Tax metrics retrieved successfully",
+                    Data = metrics
+                };
+
+                return Ok(response);
             }
-
-            var response = new GenericResponseModel<List<RetrieveTaxMetricsOutput>>
+            catch (InvalidOperationException op)
             {
-                Success = true,
-                Message = "Tax metrics retrieved successfully",
-                Data = metrics
-            };
-
-            return Ok(response);
+                return BadRequest(new GenericResponseModel<List<RetrieveTaxMetricsOutput>>
+                {
+                    Success = false,
+                    Message = op.Message
+                });
+            }
+            
         }
     }
 }
