@@ -1,17 +1,21 @@
 # South African Tax Tool
 
-Console Application which allows you to specify a year in which you want tax to be calculated **(2017 - present)**
+# TODOs
 
-1. Specify the Tax Year (e.g. 2023)
-2. Specify if Monthly or Annual
-3. Specify your income
-4. Specify if you would like to see the formula
+## Scraper
 
-## ROADMAP
+- Implement functionality to scrape **Important Dates**
+  - Scrape URL: https://www.sars.gov.za/important-dates-4/
 
-- Provide REST API capabilities to integrate with your own application
-- Provide the ability to see metrics on how your taxable income as changed over all financial years **(2017 - Present)**
+- Implement functionality to scrape **Turnover Tax**
+  - Scrape URL: https://www.sars.gov.za/tax-rates/turnover-tax/
+ 
+## API
 
-## TODOs
-
-- Implement the **Tax Rebate Scraper** to include in tax deduction calculations
+- Implement endpoint to retrieve **Important Dates**
+  - Include appropriate filtering (date ranges)
+  - ordering by date ascending
+ 
+- Implement functionality to retrieve **Turnover Tax Data**
+  - Appropriate input criteria (annual turnover, tax year)
+  - Appropriate output (tax-related amounts, formula, etc)
