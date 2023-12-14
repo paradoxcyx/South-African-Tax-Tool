@@ -73,7 +73,59 @@ namespace southafricantaxtool.Scraper
             };
             return taxData;
         }
-        
+
+        public static async Task<List<TaxBracket>> RetrieveTaxBrackets()
+        {
+            var document = await ScrapeContent(SarsTaxBracketIndividualUrl) ?? throw new InvalidDataException("Unable to scrape this URL");
+            
+            var taxBracketYearNodes = document.DocumentNode.SelectNodes("//h2[strong[contains(., 'tax year')]]");
+            var taxBracketNodes = document.DocumentNode.SelectNodes("//table[contains(@class, 'ms-rteTable') and .//th[contains(., 'Taxable income')]]");
+            
+            List<TaxBracket> taxBrackets = [];
+
+            for (var x = 0; x < taxBracketYearNodes.Count; x++)
+            {
+                var taxBracket = new TaxBracket();
+
+                var datesTuple = RegexUtilities.ExtractDates(taxBracketYearNodes[x].InnerHtml);
+
+                if (datesTuple != null)
+                {
+                    taxBracket.Start = datesTuple.Item1;
+                    taxBracket.End = datesTuple.Item2;
+
+                    //YEAR LIMITATION 
+                    //TODO: Investigate scraping limitations when trying to scrape data before 2016
+                    if (taxBracket.End.Value.Year == 2016)
+                    {
+                        break;
+                    }
+                }
+
+                var brackets = taxBracketNodes[x];
+
+                if (brackets != null)
+                {
+                    taxBracket.Brackets = ExtractTaxBrackets(brackets);
+                }
+
+                taxBrackets.Add(taxBracket);
+            }
+
+            return taxBrackets;
+
+        }
+
+        public static async Task<List<TaxRebate>> RetrieveTaxRebates()
+        {
+            var document = await ScrapeContent(SarsTaxBracketIndividualUrl) ?? throw new InvalidDataException("Unable to scrape this URL");
+            
+            var taxRebateNode = document.DocumentNode.SelectSingleNode("//table[contains(@class, 'ms-rteTable') and .//th[contains(., 'Tax Rebate​​')]]");
+
+            var taxRebates = ExtractTaxRebates(taxRebateNode);
+
+            return taxRebates;
+        }
         /// <summary>
         /// Scraping content of web url
         /// </summary>
