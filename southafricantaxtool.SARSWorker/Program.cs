@@ -8,7 +8,7 @@ var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddScrapers();
 
 builder.Services.Configure<MongoDbConfiguration>(builder.Configuration.GetSection("MongoDb"));
-builder.Services.AddDAL();
+builder.Services.AddDataAccessLayer();
 
 builder.Services.AddHostedService<TaxBracketsWorker>();
 builder.Services.AddHostedService<TaxRebatesWorker>();

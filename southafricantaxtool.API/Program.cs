@@ -19,8 +19,8 @@ builder.Services.AddStackExchangeRedisCache(options =>
 
 builder.Services.Configure<MongoDbConfiguration>(builder.Configuration.GetSection("MongoDb"));
 
-builder.Services.AddBL();
-builder.Services.AddDAL();
+builder.Services.AddBusinessLogicServices();
+builder.Services.AddDataAccessLayer();
 
 var app = builder.Build();
 

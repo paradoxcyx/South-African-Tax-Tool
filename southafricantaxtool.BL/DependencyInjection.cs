@@ -11,7 +11,7 @@ public static class DependencyInjection
     /// Register scoped services for business logic.
     /// </summary>
     /// <param name="services"></param>
-    public static void AddBL(this IServiceCollection services)
+    public static void AddBusinessLogicServices(this IServiceCollection services)
     {
         services.AddScoped<ITaxService, TaxService>();
         services.AddScoped<ITaxCalculationService, TaxCalculationService>();

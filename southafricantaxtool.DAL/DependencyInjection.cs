@@ -5,7 +5,7 @@ namespace southafricantaxtool.DAL;
 
 public static class DependencyInjection
 {
-    public static void AddDAL(this IServiceCollection services)
+    public static void AddDataAccessLayer(this IServiceCollection services)
     {
         services.AddSingleton<MdbTaxBracketService>();
         services.AddSingleton<MdbTaxRebateService>();
