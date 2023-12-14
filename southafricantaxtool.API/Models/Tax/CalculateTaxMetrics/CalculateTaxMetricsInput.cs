@@ -1,6 +1,6 @@
-﻿namespace southafricantaxtool.API.Models;
+﻿namespace southafricantaxtool.API.Models.Tax.CalculateTaxMetrics;
 
-public class RetrieveTaxInput
+public class CalculateTaxMetricsInput
 {
     public int Age { get; set; }
     public decimal Income { get; set; }

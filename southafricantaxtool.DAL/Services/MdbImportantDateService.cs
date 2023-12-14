@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Linq.Expressions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using southafricantaxtool.DAL.Configuration;
@@ -26,11 +27,18 @@ public class MdbImportantDateService
             MongoDbConsts.ImportDatesCollectionName);
     }
 
-    public async Task<List<ImportantDate>> GetAsync()
+    public async Task<List<ImportantDate>> GetAsync(Func<ImportantDate, bool>? filter = null)
     {
         var doc = await _importantDatesCollection.Find(_ => true).FirstOrDefaultAsync();
 
-        if (doc != null) return doc.ImportantDates;
+        if (doc != null)
+        {
+            if (filter == null) return doc.ImportantDates;
+            
+            var dates = doc.ImportantDates.Where(filter).ToList();
+            return dates;
+
+        }
         
         _logger.LogError("No important dates found in MongoDB. The Worker services might not be running");
         throw new InvalidOperationException("No important dates found");

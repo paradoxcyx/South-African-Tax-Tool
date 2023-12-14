@@ -1,12 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using southafricantaxtool.API.Models;
-using southafricantaxtool.API.Models.RetrieveTaxData;
-using southafricantaxtool.API.Models.RetrieveTaxMetrics;
-using southafricantaxtool.BL.Services.Tax;
+using southafricantaxtool.API.Models.Tax.CalculateTax;
+using southafricantaxtool.API.Models.Tax.CalculateTaxMetrics;
 using southafricantaxtool.BL.Services.TaxLookup;
 using southafricantaxtool.BL.TaxCalculation;
 using southafricantaxtool.DAL.Services;
-using southafricantaxtool.SARSScraper.Models;
 
 namespace southafricantaxtool.API.Controllers
 {
@@ -16,11 +14,10 @@ namespace southafricantaxtool.API.Controllers
         ITaxCalculationService taxCalculationService, 
         ITaxLookupService taxLookupService, 
         MdbTaxBracketService mdbTaxBracketService, 
-        MdbTaxRebateService mdbTaxRebateService, 
-        MdbImportantDateService mdbImportantDateService) : ControllerBase
+        MdbTaxRebateService mdbTaxRebateService) : ControllerBase
     {
-        [HttpPost("RetrieveTaxData")]
-        public async Task<IActionResult> RetrieveTaxData([FromBody] RetrieveTaxDataInput input)
+        [HttpPost("CalculateTax")]
+        public async Task<IActionResult> CalculateTax([FromBody] CalculateTaxInput input)
         {
             try
             {
@@ -40,7 +37,7 @@ namespace southafricantaxtool.API.Controllers
                 var annualNett = taxCalculationService.CalculateAnnualNett(annualIncome, annualTax, rebate.Amount);
                 var rule = taxCalculationService.GetTaxRuleDescription(bracket);
 
-                var output = new RetrieveTaxDataOutput
+                var output = new CalculateTaxOutput
                 {
                     AnnualTax = annualTax,
                     MonthlyTax = monthlyTax,
@@ -50,10 +47,10 @@ namespace southafricantaxtool.API.Controllers
                     FormulaSteps = taxCalculationService.BuildFormulaSteps(bracket, annualIncome, annualTax, rebate!.Amount)
                 };
 
-                var response = new GenericResponseModel<RetrieveTaxDataOutput>
+                var response = new GenericResponseModel<CalculateTaxOutput>
                 {
                     Success = true,
-                    Message = "Tax data retrieved successfully",
+                    Message = "Tax calculated successfully",
                     Data = output
                 };
 
@@ -61,7 +58,7 @@ namespace southafricantaxtool.API.Controllers
             }
             catch (InvalidOperationException op)
             {
-                return BadRequest(new GenericResponseModel<RetrieveTaxDataOutput>
+                return BadRequest(new GenericResponseModel<CalculateTaxOutput>
                 {
                     Success = false,
                     Message = op.Message
@@ -69,8 +66,8 @@ namespace southafricantaxtool.API.Controllers
             }
         }
 
-        [HttpPost("RetrieveTaxMetrics")]
-        public async Task<IActionResult> RetrieveTaxMetrics([FromBody] RetrieveTaxMetricsInput input)
+        [HttpPost("CalculateTaxMetrics")]
+        public async Task<IActionResult> CalculateTaxMetrics([FromBody] CalculateTaxMetricsInput input)
         {
             try
             {
@@ -86,8 +83,8 @@ namespace southafricantaxtool.API.Controllers
                     .OrderByDescending(o => o)
                     .ToList();
 
-                var metrics = new List<RetrieveTaxMetricsOutput>();
-                RetrieveTaxMetricsOutput? previousMetric = null;
+                var metrics = new List<CalculateTaxMetricsOutput>();
+                CalculateTaxMetricsOutput? previousMetric = null;
 
                 foreach (var year in years)
                 {
@@ -100,7 +97,7 @@ namespace southafricantaxtool.API.Controllers
                     var monthlyNett = taxCalculationService.CalculateMonthlyNett(monthlyIncome, monthlyTax);
                     var annualNett = taxCalculationService.CalculateAnnualNett(annualIncome, annualTax, rebate.Amount);
 
-                    var metric = new RetrieveTaxMetricsOutput
+                    var metric = new CalculateTaxMetricsOutput
                     {
                         Year = year,
                         AnnualTax = annualTax,
@@ -119,10 +116,10 @@ namespace southafricantaxtool.API.Controllers
                     previousMetric = metric;
                 }
 
-                var response = new GenericResponseModel<List<RetrieveTaxMetricsOutput>>
+                var response = new GenericResponseModel<List<CalculateTaxMetricsOutput>>
                 {
                     Success = true,
-                    Message = "Tax metrics retrieved successfully",
+                    Message = "Tax metrics calculated successfully",
                     Data = metrics
                 };
 
@@ -130,26 +127,13 @@ namespace southafricantaxtool.API.Controllers
             }
             catch (InvalidOperationException op)
             {
-                return BadRequest(new GenericResponseModel<List<RetrieveTaxMetricsOutput>>
+                return BadRequest(new GenericResponseModel<List<CalculateTaxMetricsOutput>>
                 {
                     Success = false,
                     Message = op.Message
                 });
             }
             
-        }
-
-        [HttpGet("RetrieveImportantDates")]
-        public async Task<IActionResult> RetrieveImportantDates()
-        {
-            var dates = await mdbImportantDateService.GetAsync();
-
-            return Ok(new GenericResponseModel<List<ImportantDate>>
-            {
-                Success = true,
-                Message = string.Empty,
-                Data = dates
-            });
         }
         
     }

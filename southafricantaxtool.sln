@@ -12,6 +12,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "southafricantaxtool.SARSWor
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "southafricantaxtool.DAL", "southafricantaxtool.DAL\southafricantaxtool.DAL.csproj", "{8876AF73-CAEE-43B7-A1C1-FD6C3F65567B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "southafricantaxtool.Tests", "southafricantaxtool.Tests\southafricantaxtool.Tests.csproj", "{22B30993-BB6E-4F00-8A63-BA61FAEDD23D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,6 +40,10 @@ Global
 		{8876AF73-CAEE-43B7-A1C1-FD6C3F65567B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8876AF73-CAEE-43B7-A1C1-FD6C3F65567B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8876AF73-CAEE-43B7-A1C1-FD6C3F65567B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{22B30993-BB6E-4F00-8A63-BA61FAEDD23D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{22B30993-BB6E-4F00-8A63-BA61FAEDD23D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{22B30993-BB6E-4F00-8A63-BA61FAEDD23D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{22B30993-BB6E-4F00-8A63-BA61FAEDD23D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
