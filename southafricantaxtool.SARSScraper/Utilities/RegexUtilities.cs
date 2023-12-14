@@ -1,4 +1,4 @@
-﻿namespace southafricantaxtool.Scraper.Utilities;
+﻿namespace southafricantaxtool.SARSScraper.Utilities;
 
 internal static class RegexUtilities
 {
@@ -83,7 +83,7 @@ internal static class RegexUtilities
         /// </summary>
         /// <param name="inputText">The HTML inner text</param>
         /// <returns>a Tuple that represents the Income From and To</returns>
-        public static Tuple<decimal, decimal?>? ExtractIncomeRange(string inputText)
+    public static Tuple<decimal, decimal?>? ExtractIncomeRange(string inputText)
         {
             try
             {

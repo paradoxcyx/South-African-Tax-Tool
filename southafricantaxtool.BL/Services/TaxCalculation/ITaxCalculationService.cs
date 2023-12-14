@@ -1,4 +1,4 @@
-﻿using southafricantaxtool.Scraper.Models;
+﻿using southafricantaxtool.SARSScraper.Models;
 
 namespace southafricantaxtool.BL.TaxCalculation;
 

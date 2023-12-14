@@ -1,15 +1,21 @@
+using southafricantaxtool.DAL.Services;
+using southafricantaxtool.SARSScraper;
+
 namespace southafricantaxtool.SARSWorker;
 
-public class TaxBracketsWorker(ILogger<TaxBracketsWorker> logger) : BackgroundService
+public class TaxBracketsWorker(ILogger<TaxBracketsWorker> logger, MdbTaxBracketService mdbTaxBracketService, TaxBracketScraper taxBracketScraper) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            var taxBrackets = await Scraper.Scraper.RetrieveTaxData()
             logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
+            
+            var taxBrackets = await taxBracketScraper.RetrieveTaxBrackets();
 
-            logger.LogInformation("logging for: {duration}", int.MaxValue);
+            await mdbTaxBracketService.SetAsync(taxBrackets);
+            logger.LogInformation("Updated {count} tax brackets to MongoDB", taxBrackets.Count);
+
             await Task.Delay(int.MaxValue, stoppingToken);
         }
     }

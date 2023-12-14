@@ -9,5 +9,6 @@ public static class DependencyInjection
     {
         services.AddSingleton<MdbTaxBracketService>();
         services.AddSingleton<MdbTaxRebateService>();
+        services.AddSingleton<MdbImportantDateService>();
     }
 }

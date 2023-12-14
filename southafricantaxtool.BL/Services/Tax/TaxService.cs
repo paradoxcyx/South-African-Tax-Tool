@@ -1,8 +1,8 @@
 ﻿using System.Text;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
-using southafricantaxtool.Scraper;
-using southafricantaxtool.Scraper.Models;
+using southafricantaxtool.SARSScraper;
+using southafricantaxtool.SARSScraper.Models;
 
 namespace southafricantaxtool.BL.Services.Tax;
 
@@ -10,7 +10,7 @@ public class TaxService(IDistributedCache cache) : ITaxService
 {
     public async Task<TaxData> GetTaxDataAsync()
     {
-        var cachedData = await cache.GetAsync("taxdata");
+        /*var cachedData = await cache.GetAsync("taxdata");
         
         if (cachedData != null)
         {
@@ -18,7 +18,7 @@ public class TaxService(IDistributedCache cache) : ITaxService
             return JsonConvert.DeserializeObject<TaxData>(json);
         }
 
-        var taxData = await Scraper.Scraper.RetrieveTaxData();
+        var taxData = await SARSScraper.Scraper.RetrieveTaxData();
 
         if (taxData == null)
         {
@@ -32,7 +32,9 @@ public class TaxService(IDistributedCache cache) : ITaxService
 
         await cache.SetAsync("taxdata", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(taxData)), cacheOptions);
 
-        return taxData;
+        return taxData;*/
+
+        return new TaxData();
     }
 
 }

@@ -1,4 +1,4 @@
-﻿namespace southafricantaxtool.Scraper.Models;
+﻿namespace southafricantaxtool.SARSScraper.Models;
 
 public class TaxData
 {

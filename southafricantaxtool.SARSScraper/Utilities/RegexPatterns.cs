@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace southafricantaxtool.Scraper;
+namespace southafricantaxtool.SARSScraper.Utilities;
 
 public static partial class RegexPatterns
 {

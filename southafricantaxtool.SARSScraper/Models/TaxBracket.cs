@@ -1,7 +1,7 @@
-﻿using southafricantaxtool.Scraper;
-using southafricantaxtool.Scraper.Models;
+﻿using southafricantaxtool.SARSScraper;
+using southafricantaxtool.SARSScraper.Models;
 
-namespace southafricantaxtool.Scraper.Models
+namespace southafricantaxtool.SARSScraper.Models
 {
     public class TaxBracket
     {

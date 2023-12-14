@@ -4,11 +4,12 @@ VisualStudioVersion = 17.8.34309.116
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "southafricantaxtool.API", "southafricantaxtool.API\southafricantaxtool.API.csproj", "{477B2E1F-F3E0-49DD-9942-8B345A4F015C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "southafricantaxtool.Scraper", "southafricantaxtool.Scraper\southafricantaxtool.Scraper.csproj", "{BF4CE692-F0FA-45B2-B82C-05D899A94C65}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "southafricantaxtool.SARSScraper", "southafricantaxtool.SARSScraper\southafricantaxtool.SARSScraper.csproj", "{BF4CE692-F0FA-45B2-B82C-05D899A94C65}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "southafricantaxtool.BL", "southafricantaxtool.BL\southafricantaxtool.BL.csproj", "{2D7D3DB8-3471-4A58-B6CF-7113261CE586}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "southafricantaxtool.SARSWorker", "southafricantaxtool.SARSWorker\southafricantaxtool.SARSWorker.csproj", "{178A95F6-5003-4995-8514-A1C1045629F2}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "southafricantaxtool.DAL", "southafricantaxtool.DAL\southafricantaxtool.DAL.csproj", "{8876AF73-CAEE-43B7-A1C1-FD6C3F65567B}"
 EndProject
 Global

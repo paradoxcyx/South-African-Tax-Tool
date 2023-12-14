@@ -6,19 +6,24 @@ using southafricantaxtool.BL.Services.Tax;
 using southafricantaxtool.BL.Services.TaxLookup;
 using southafricantaxtool.BL.TaxCalculation;
 using southafricantaxtool.DAL.Services;
+using southafricantaxtool.SARSScraper.Models;
 
 namespace southafricantaxtool.API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class TaxController(ILogger<TaxController> logger, ITaxCalculationService taxCalculationService, ITaxLookupService taxLookupService, ITaxService taxService, MdbTaxBracketService mdbTaxBracketService, MdbTaxRebateService mdbTaxRebateService) : ControllerBase
+    public class TaxController(ILogger<TaxController> logger, 
+        ITaxCalculationService taxCalculationService, 
+        ITaxLookupService taxLookupService, 
+        MdbTaxBracketService mdbTaxBracketService, 
+        MdbTaxRebateService mdbTaxRebateService, 
+        MdbImportantDateService mdbImportantDateService) : ControllerBase
     {
         [HttpPost("RetrieveTaxData")]
         public async Task<IActionResult> RetrieveTaxData([FromBody] RetrieveTaxDataInput input)
         {
             try
             {
-                //var taxData = await taxService.GetTaxDataAsync();
                 var taxBrackets = await mdbTaxBracketService.GetAsync();
                 var taxRebates = await mdbTaxRebateService.GetAsync();
                 
@@ -133,5 +138,19 @@ namespace southafricantaxtool.API.Controllers
             }
             
         }
+
+        [HttpGet("RetrieveImportantDates")]
+        public async Task<IActionResult> RetrieveImportantDates()
+        {
+            var dates = await mdbImportantDateService.GetAsync();
+
+            return Ok(new GenericResponseModel<List<ImportantDate>>
+            {
+                Success = true,
+                Message = string.Empty,
+                Data = dates
+            });
+        }
+        
     }
 }

@@ -1,18 +1,22 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Amazon.Runtime.Internal.Util;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using southafricantaxtool.DAL.Configuration;
 using southafricantaxtool.DAL.Models;
-using southafricantaxtool.Scraper.Models;
+using southafricantaxtool.SARSScraper.Models;
 
 namespace southafricantaxtool.DAL.Services;
 
 public class MdbTaxBracketService
 {
     private readonly IMongoCollection<MdbTaxBrackets> _bracketsCollection;
-
+    private readonly ILogger<MdbTaxBracketService> _logger;
+    
     public MdbTaxBracketService(
-        IOptions<MongoDbConfiguration> bookStoreDatabaseSettings)
+        IOptions<MongoDbConfiguration> bookStoreDatabaseSettings, ILogger<MdbTaxBracketService> logger)
     {
+        _logger = logger;
         var mongoClient = new MongoClient(
             bookStoreDatabaseSettings.Value.ConnectionString);
 
@@ -27,19 +31,30 @@ public class MdbTaxBracketService
     {
         var doc = await _bracketsCollection.Find(_ => true).FirstOrDefaultAsync();
 
-        if (doc != null)
+        if (doc != null) return doc.TaxBrackets;
+        
+        _logger.LogError("No tax brackets found in MongoDB. The Worker services might not be running");
+        throw new InvalidOperationException("No tax brackets found");
+
+
+    }
+
+    public async Task SetAsync(List<TaxBracket> taxBrackets)
+    {
+        var doc = await _bracketsCollection.Find(_ => true).FirstOrDefaultAsync();
+
+        if (doc == null)
         {
-            return doc.TaxBrackets;
+            doc = new MdbTaxBrackets
+            {
+                TaxBrackets = taxBrackets
+            };
+            await _bracketsCollection.InsertOneAsync(doc);
+            return;
         }
 
-        var taxBrackets = await Scraper.Scraper.RetrieveTaxBrackets();
+        doc.TaxBrackets = taxBrackets;
 
-        var insertDoc = new MdbTaxBrackets
-        {
-            TaxBrackets = taxBrackets
-        };
-
-        await _bracketsCollection.InsertOneAsync(insertDoc);
-        return taxBrackets;
+        await _bracketsCollection.FindOneAndReplaceAsync(d => d.Id == doc.Id, doc);
     }
 }

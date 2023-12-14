@@ -19,6 +19,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\southafricantaxtool.Scraper\southafricantaxtool.Scraper.csproj" />
+      <ProjectReference Include="..\southafricantaxtool.DAL\southafricantaxtool.DAL.csproj" />
+      <ProjectReference Include="..\southafricantaxtool.SARSScraper\southafricantaxtool.SARSScraper.csproj" />
     </ItemGroup>
 </Project>

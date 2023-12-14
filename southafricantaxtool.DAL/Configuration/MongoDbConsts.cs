@@ -4,4 +4,5 @@ public static class MongoDbConsts
 {
     public const string TaxBracketsCollectionName = "tax-brackets";
     public const string TaxRebatesCollectionName = "tax-rebates";
+    public const string ImportDatesCollectionName = "important-dates";
 }

@@ -1,11 +1,11 @@
-﻿using southafricantaxtool.Scraper.Enums;
+﻿using southafricantaxtool.SARSScraper.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace southafricantaxtool.Scraper.Models
+namespace southafricantaxtool.SARSScraper.Models
 {
     public class TaxRebate
     {
