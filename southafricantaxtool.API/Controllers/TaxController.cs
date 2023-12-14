@@ -5,26 +5,29 @@ using southafricantaxtool.API.Models.RetrieveTaxMetrics;
 using southafricantaxtool.BL.Services.Tax;
 using southafricantaxtool.BL.Services.TaxLookup;
 using southafricantaxtool.BL.TaxCalculation;
+using southafricantaxtool.DAL.Services;
 
 namespace southafricantaxtool.API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class TaxController(ILogger<TaxController> logger, ITaxCalculationService taxCalculationService, ITaxLookupService taxLookupService, ITaxService taxService) : ControllerBase
+    public class TaxController(ILogger<TaxController> logger, ITaxCalculationService taxCalculationService, ITaxLookupService taxLookupService, ITaxService taxService, MdbTaxBracketService mdbTaxBracketService, MdbTaxRebateService mdbTaxRebateService) : ControllerBase
     {
         [HttpPost("RetrieveTaxData")]
         public async Task<IActionResult> RetrieveTaxData([FromBody] RetrieveTaxDataInput input)
         {
             try
             {
-                var taxData = await taxService.GetTaxDataAsync();
+                //var taxData = await taxService.GetTaxDataAsync();
+                var taxBrackets = await mdbTaxBracketService.GetAsync();
+                var taxRebates = await mdbTaxRebateService.GetAsync();
                 
                 var monthlyIncome = input.IsMonthly ? input.Income : input.Income / 12;
                 var annualIncome = input.IsMonthly ? input.Income * 12 : input.Income;
 
-                var taxBracket = taxLookupService.FindTaxBracketForYear(taxData.TaxBrackets, input.TaxYear);
+                var taxBracket = taxLookupService.FindTaxBracketForYear(taxBrackets, input.TaxYear);
                 var bracket = taxLookupService.FindTaxBracketForIncome(taxBracket.Brackets, annualIncome);
-                var rebate = taxLookupService.FindTaxRebateForAgeAndYear(taxData.TaxRebates, input.Age, input.TaxYear);
+                var rebate = taxLookupService.FindTaxRebateForAgeAndYear(taxRebates, input.Age, input.TaxYear);
 
                 var annualTax = taxCalculationService.CalculateAnnualTax(bracket, annualIncome);
                 var monthlyTax = taxCalculationService.CalculateMonthlyTax(annualTax, rebate.Amount);
@@ -66,12 +69,13 @@ namespace southafricantaxtool.API.Controllers
         {
             try
             {
-                var taxData = await taxService.GetTaxDataAsync();
+                var taxBrackets = await mdbTaxBracketService.GetAsync();
+                var taxRebates = await mdbTaxRebateService.GetAsync();
 
                 var monthlyIncome = input.IsMonthly ? input.Income : input.Income / 12;
                 var annualIncome = input.IsMonthly ? input.Income * 12 : input.Income;
 
-                var years = taxData.TaxBrackets
+                var years = taxBrackets
                     .Where(x => x.End.HasValue)
                     .Select(x => x.End!.Value.Year)
                     .OrderByDescending(o => o)
@@ -82,9 +86,9 @@ namespace southafricantaxtool.API.Controllers
 
                 foreach (var year in years)
                 {
-                    var taxBracket = taxLookupService.FindTaxBracketForYear(taxData.TaxBrackets, year);
+                    var taxBracket = taxLookupService.FindTaxBracketForYear(taxBrackets, year);
                     var bracket = taxLookupService.FindTaxBracketForIncome(taxBracket.Brackets, annualIncome);
-                    var rebate = taxLookupService.FindTaxRebateForAgeAndYear(taxData.TaxRebates, input.Age, year);
+                    var rebate = taxLookupService.FindTaxRebateForAgeAndYear(taxRebates, input.Age, year);
 
                     var annualTax = taxCalculationService.CalculateAnnualTax(bracket, annualIncome);
                     var monthlyTax = taxCalculationService.CalculateMonthlyTax(annualTax, rebate.Amount);

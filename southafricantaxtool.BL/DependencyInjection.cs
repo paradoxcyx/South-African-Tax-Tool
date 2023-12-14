@@ -7,7 +7,11 @@ namespace southafricantaxtool.BL;
 
 public static class DependencyInjection
 {
-    public static void AddTaxServices(this IServiceCollection services)
+    /// <summary>
+    /// Register scoped services for business logic.
+    /// </summary>
+    /// <param name="services"></param>
+    public static void AddBL(this IServiceCollection services)
     {
         services.AddScoped<ITaxService, TaxService>();
         services.AddScoped<ITaxCalculationService, TaxCalculationService>();
