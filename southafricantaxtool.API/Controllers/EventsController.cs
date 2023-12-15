@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using southafricantaxtool.API.Models;
 using southafricantaxtool.API.Models.Events.ImportantDates;
-using southafricantaxtool.Interface;
-using southafricantaxtool.SARSScraper.Models;
+using southafricantaxtool.Interface.Models;
+using southafricantaxtool.Interface.Services;
 
 namespace southafricantaxtool.API.Controllers;
 

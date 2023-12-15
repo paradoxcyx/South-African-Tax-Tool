@@ -3,11 +3,11 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
-using Newtonsoft.Json;
 using southafricantaxtool.DAL.Configuration;
 using southafricantaxtool.DAL.Models;
-using southafricantaxtool.Interface;
-using southafricantaxtool.SARSScraper.Models;
+using southafricantaxtool.Interface.Services;
+using southafricantaxtool.Interface.Models;
+using System.Text.Json;
 
 namespace southafricantaxtool.DAL.Stores;
 
@@ -40,7 +40,7 @@ public class MdbTaxRebateStore : ITaxRebateStore
         if (cachedData != null)
         {
             var json = Encoding.UTF8.GetString(cachedData);
-            var taxRebates = JsonConvert.DeserializeObject<List<TaxRebate>>(json);
+            var taxRebates = JsonSerializer.Deserialize<List<TaxRebate>>(json);
 
             if (taxRebates != null)
             {
@@ -89,6 +89,6 @@ public class MdbTaxRebateStore : ITaxRebateStore
             AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(30)
         };
 
-        await _cache.SetAsync(RedisKey, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(taxRebates)), cacheOptions);
+        await _cache.SetAsync(RedisKey, Encoding.UTF8.GetBytes(JsonSerializer.Serialize(taxRebates)), cacheOptions);
     }
 }

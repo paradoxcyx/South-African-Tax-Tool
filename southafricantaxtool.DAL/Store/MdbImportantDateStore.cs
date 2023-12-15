@@ -1,14 +1,13 @@
-﻿using System.Linq.Expressions;
-using System.Text;
+﻿using System.Text;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
-using Newtonsoft.Json;
 using southafricantaxtool.DAL.Configuration;
 using southafricantaxtool.DAL.Models;
-using southafricantaxtool.Interface;
-using southafricantaxtool.SARSScraper.Models;
+using southafricantaxtool.Interface.Services;
+using southafricantaxtool.Interface.Models;
+using System.Text.Json;
 
 namespace southafricantaxtool.DAL.Stores;
 
@@ -41,7 +40,7 @@ public class MdbImportantDateStore : IImportantDateStore
         if (cachedData != null)
         {
             var json = Encoding.UTF8.GetString(cachedData);
-            var dates = JsonConvert.DeserializeObject<List<ImportantDate>>(json);
+            var dates = JsonSerializer.Deserialize<List<ImportantDate>>(json);
 
             if (dates != null)
             {
@@ -102,6 +101,6 @@ public class MdbImportantDateStore : IImportantDateStore
             AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(30)
         };
 
-        await _cache.SetAsync(RedisKey, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(importantDates)), cacheOptions);
+        await _cache.SetAsync(RedisKey, Encoding.UTF8.GetBytes(JsonSerializer.Serialize(importantDates)), cacheOptions);
     }
 }

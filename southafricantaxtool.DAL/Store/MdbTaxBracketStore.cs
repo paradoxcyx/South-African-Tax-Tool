@@ -1,14 +1,13 @@
 ﻿using System.Text;
-using Amazon.Runtime.Internal.Util;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
-using Newtonsoft.Json;
 using southafricantaxtool.DAL.Configuration;
 using southafricantaxtool.DAL.Models;
-using southafricantaxtool.Interface;
-using southafricantaxtool.SARSScraper.Models;
+using southafricantaxtool.Interface.Services;
+using southafricantaxtool.Interface.Models;
+using System.Text.Json;
 
 namespace southafricantaxtool.DAL.Stores;
 
@@ -41,7 +40,7 @@ public class MdbTaxBracketStore : ITaxBracketStore
         if (cachedData != null)
         {
             var json = Encoding.UTF8.GetString(cachedData);
-            var taxBrackets = JsonConvert.DeserializeObject<List<TaxBracket>>(json);
+            var taxBrackets = JsonSerializer.Deserialize<List<TaxBracket>>(json);
 
             if (taxBrackets != null)
             {
@@ -92,7 +91,7 @@ public class MdbTaxBracketStore : ITaxBracketStore
             AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(30)
         };
 
-        await _cache.SetAsync(RedisKey, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(taxBrackets)), cacheOptions);
+        await _cache.SetAsync(RedisKey, Encoding.UTF8.GetBytes(JsonSerializer.Serialize(taxBrackets)), cacheOptions);
     }
 
 }

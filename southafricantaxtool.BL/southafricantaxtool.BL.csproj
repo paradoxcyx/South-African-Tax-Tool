@@ -9,15 +9,14 @@
     <ItemGroup>
       <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="8.0.0" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
-      <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\southafricantaxtool.SARSScraper\southafricantaxtool.SARSScraper.csproj" />
+      <ProjectReference Include="..\southafricantaxtool.Interface\southafricantaxtool.Interface.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <Reference Include="Microsoft.Extensions.Caching.Abstractions"/>
+      <Reference Include="Microsoft.Extensions.Caching.Abstractions" />
     </ItemGroup>
 
 </Project>

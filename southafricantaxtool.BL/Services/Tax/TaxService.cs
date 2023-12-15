@@ -1,8 +1,5 @@
-﻿using System.Text;
-using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
-using southafricantaxtool.SARSScraper;
-using southafricantaxtool.SARSScraper.Models;
+﻿using Microsoft.Extensions.Caching.Distributed;
+using southafricantaxtool.Interface.Models;
 
 namespace southafricantaxtool.BL.Services.Tax;
 

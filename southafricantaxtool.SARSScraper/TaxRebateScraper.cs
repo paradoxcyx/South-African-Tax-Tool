@@ -1,5 +1,6 @@
 ﻿using HtmlAgilityPack;
-using southafricantaxtool.SARSScraper.Models;
+using southafricantaxtool.Interface.Enums;
+using southafricantaxtool.Interface.Models;
 using southafricantaxtool.SARSScraper.Utilities;
 
 namespace southafricantaxtool.SARSScraper;
@@ -37,15 +38,15 @@ public class TaxRebateScraper : Scraper
         var taxRebates = new List<TaxRebate>
         {
             new() {
-                TaxRebateType = Enums.TaxRebateEnum.Primary
+                TaxRebateType = TaxRebateEnum.Primary
             },
             new()
             {
-                TaxRebateType = Enums.TaxRebateEnum.Secondary
+                TaxRebateType = TaxRebateEnum.Secondary
             },
             new()
             {
-                TaxRebateType = Enums.TaxRebateEnum.Tertiary
+                TaxRebateType = TaxRebateEnum.Tertiary
             },
         };
 

@@ -4,7 +4,7 @@ using southafricantaxtool.API.Models.Tax.CalculateTax;
 using southafricantaxtool.API.Models.Tax.CalculateTaxMetrics;
 using southafricantaxtool.BL.Services.TaxLookup;
 using southafricantaxtool.BL.TaxCalculation;
-using southafricantaxtool.Interface;
+using southafricantaxtool.Interface.Services;
 
 namespace southafricantaxtool.API.Controllers
 {

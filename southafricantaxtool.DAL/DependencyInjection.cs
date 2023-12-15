@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using southafricantaxtool.DAL.Stores;
-using southafricantaxtool.Interface;
+using southafricantaxtool.Interface.Services;
 
 namespace southafricantaxtool.DAL;
 

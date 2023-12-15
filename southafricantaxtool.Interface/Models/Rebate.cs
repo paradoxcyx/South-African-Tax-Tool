@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace southafricantaxtool.SARSScraper.Models
+namespace southafricantaxtool.Interface.Models
 {
     public class Rebate
     {
