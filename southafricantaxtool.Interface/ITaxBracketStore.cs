@@ -8,5 +8,8 @@ namespace southafricantaxtool.Interface
 {
     internal interface ITaxBracketStore
     {
+        Task<List<TaxBracket>> GetAsync();
+        Task SetAsync(List<TaxBracket> taxBrackets);
+        Task UpdateRedisCache(List<TaxBracket> taxBrackets);
     }
 }

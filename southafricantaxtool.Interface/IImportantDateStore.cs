@@ -8,6 +8,7 @@ namespace southafricantaxtool.Interface
 {
     public interface IImportantDateStore
     {
-        Task<List<ImportantDate>> GetAsync(Func<ImportantDate, bool>? filter = null)
+        Task<List<ImportantDate>> GetAsync(Func<ImportantDate, bool>? filter = null);
+        Task SetAsync(List<ImportantDate> importantDates);
     }
 }

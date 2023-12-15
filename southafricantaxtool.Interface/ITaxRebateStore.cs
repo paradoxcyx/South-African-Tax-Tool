@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 
 namespace southafricantaxtool.Interface
 {
-    internal interface ITaxRebateStore
+    public interface ITaxRebateStore
     {
+        Task<List<TaxRebate>> GetAsync();
+        Task SetAsync(List<TaxRebate> taxRebates);
+        Task UpdateRedisCache(List<TaxRebate> taxRebates);
     }
 }
