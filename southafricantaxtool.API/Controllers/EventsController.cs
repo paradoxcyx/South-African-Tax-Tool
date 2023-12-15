@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using southafricantaxtool.API.Models;
 using southafricantaxtool.API.Models.Events.ImportantDates;
-using southafricantaxtool.DAL.Services;
+using southafricantaxtool.Interface;
 using southafricantaxtool.SARSScraper.Models;
 
 namespace southafricantaxtool.API.Controllers;
@@ -9,7 +9,7 @@ namespace southafricantaxtool.API.Controllers;
 [ApiController]
 [Route("[controller]")]
 public class EventsController(ILogger<EventsController> logger, 
-    MdbImportantDateService mdbImportantDateService) : ControllerBase
+    IImportantDateStore importantDateStore) : ControllerBase
 {
     [HttpPost("ImportantDates")]
     public async Task<IActionResult> ImportantDates([FromBody] ImportantDatesInput input)
@@ -27,7 +27,7 @@ public class EventsController(ILogger<EventsController> logger,
                 _ => null
             };
 
-            var dates = await mdbImportantDateService.GetAsync(filter);
+            var dates = await importantDateStore.GetAsync(filter);
 
             return Ok(new GenericResponseModel<List<ImportantDate>>
             {

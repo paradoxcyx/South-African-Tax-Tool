@@ -1,9 +1,10 @@
-﻿using southafricantaxtool.DAL.Services;
+﻿using southafricantaxtool.DAL.Stores;
+using southafricantaxtool.Interface;
 using southafricantaxtool.SARSScraper;
 
 namespace southafricantaxtool.SARSWorker;
 
-public class ImportantDatesWorker(ILogger<ImportantDatesWorker> logger, MdbImportantDateService mdbImportantDateService, ImportantDateScraper importantDateScraper) : BackgroundService
+public class ImportantDatesWorker(ILogger<ImportantDatesWorker> logger, IImportantDateStore mdbImportantDateService, ImportantDateScraper importantDateScraper) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {

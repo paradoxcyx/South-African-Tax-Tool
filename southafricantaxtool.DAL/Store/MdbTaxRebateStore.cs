@@ -6,11 +6,12 @@ using MongoDB.Driver;
 using Newtonsoft.Json;
 using southafricantaxtool.DAL.Configuration;
 using southafricantaxtool.DAL.Models;
+using southafricantaxtool.Interface;
 using southafricantaxtool.SARSScraper.Models;
 
-namespace southafricantaxtool.DAL.Services;
+namespace southafricantaxtool.DAL.Stores;
 
-public class MdbTaxRebateStore
+public class MdbTaxRebateStore : ITaxRebateStore
 {
     private readonly IMongoCollection<MdbTaxRebates> _rebatesCollection;
     private readonly ILogger<MdbTaxRebateStore> _logger;
@@ -18,15 +19,15 @@ public class MdbTaxRebateStore
     private const string RedisKey = "tax-rebates";
     
     public MdbTaxRebateStore(
-        IOptions<MongoDbConfiguration> bookStoreDatabaseSettings, ILogger<MdbTaxRebateStore> logger, IDistributedCache cache)
+        IOptions<MongoDbConfiguration> sarsDatabaseSettings, ILogger<MdbTaxRebateStore> logger, IDistributedCache cache)
     {
         _logger = logger;
         _cache = cache;
         var mongoClient = new MongoClient(
-            bookStoreDatabaseSettings.Value.ConnectionString);
+            sarsDatabaseSettings.Value.ConnectionString);
 
         var mongoDatabase = mongoClient.GetDatabase(
-            bookStoreDatabaseSettings.Value.DatabaseName);
+            sarsDatabaseSettings.Value.DatabaseName);
 
         _rebatesCollection = mongoDatabase.GetCollection<MdbTaxRebates>(
             MongoDbConsts.TaxRebatesCollectionName);

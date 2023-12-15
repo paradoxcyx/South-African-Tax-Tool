@@ -7,11 +7,12 @@ using MongoDB.Driver;
 using Newtonsoft.Json;
 using southafricantaxtool.DAL.Configuration;
 using southafricantaxtool.DAL.Models;
+using southafricantaxtool.Interface;
 using southafricantaxtool.SARSScraper.Models;
 
-namespace southafricantaxtool.DAL.Services;
+namespace southafricantaxtool.DAL.Stores;
 
-public class MdbTaxBracketStore
+public class MdbTaxBracketStore : ITaxBracketStore
 {
     private readonly IMongoCollection<MdbTaxBrackets> _bracketsCollection;
     private readonly ILogger<MdbTaxBracketStore> _logger;
@@ -19,15 +20,15 @@ public class MdbTaxBracketStore
     private const string RedisKey = "tax-brackets";
     
     public MdbTaxBracketStore(
-        IOptions<MongoDbConfiguration> bookStoreDatabaseSettings, ILogger<MdbTaxBracketStore> logger, IDistributedCache cache)
+        IOptions<MongoDbConfiguration> sarsDatabaseSettings, ILogger<MdbTaxBracketStore> logger, IDistributedCache cache)
     {
         _logger = logger;
         _cache = cache;
         var mongoClient = new MongoClient(
-            bookStoreDatabaseSettings.Value.ConnectionString);
+            sarsDatabaseSettings.Value.ConnectionString);
 
         var mongoDatabase = mongoClient.GetDatabase(
-            bookStoreDatabaseSettings.Value.DatabaseName);
+            sarsDatabaseSettings.Value.DatabaseName);
 
         _bracketsCollection = mongoDatabase.GetCollection<MdbTaxBrackets>(
             MongoDbConsts.TaxBracketsCollectionName);

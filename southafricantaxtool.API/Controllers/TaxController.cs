@@ -4,7 +4,7 @@ using southafricantaxtool.API.Models.Tax.CalculateTax;
 using southafricantaxtool.API.Models.Tax.CalculateTaxMetrics;
 using southafricantaxtool.BL.Services.TaxLookup;
 using southafricantaxtool.BL.TaxCalculation;
-using southafricantaxtool.DAL.Services;
+using southafricantaxtool.Interface;
 
 namespace southafricantaxtool.API.Controllers
 {
@@ -13,16 +13,16 @@ namespace southafricantaxtool.API.Controllers
     public class TaxController(ILogger<TaxController> logger, 
         ITaxCalculationService taxCalculationService, 
         ITaxLookupService taxLookupService, 
-        MdbTaxBracketStore mdbTaxBracketService, 
-        MdbTaxRebateStore mdbTaxRebateService) : ControllerBase
+        ITaxBracketStore taxBracketStore, 
+        ITaxRebateStore taxRebateStore) : ControllerBase
     {
         [HttpPost("CalculateTax")]
         public async Task<IActionResult> CalculateTax([FromBody] CalculateTaxInput input)
         {
             try
             {
-                var taxBrackets = await mdbTaxBracketService.GetAsync();
-                var taxRebates = await mdbTaxRebateService.GetAsync();
+                var taxBrackets = await taxBracketStore.GetAsync();
+                var taxRebates = await taxRebateStore.GetAsync();
                 
                 var monthlyIncome = input.IsMonthly ? input.Income : input.Income / 12;
                 var annualIncome = input.IsMonthly ? input.Income * 12 : input.Income;
@@ -71,8 +71,8 @@ namespace southafricantaxtool.API.Controllers
         {
             try
             {
-                var taxBrackets = await mdbTaxBracketService.GetAsync();
-                var taxRebates = await mdbTaxRebateService.GetAsync();
+                var taxBrackets = await taxBracketStore.GetAsync();
+                var taxRebates = await taxRebateStore.GetAsync();
 
                 var monthlyIncome = input.IsMonthly ? input.Income : input.Income / 12;
                 var annualIncome = input.IsMonthly ? input.Income * 12 : input.Income;

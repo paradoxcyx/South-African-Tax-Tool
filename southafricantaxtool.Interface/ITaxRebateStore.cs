@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using southafricantaxtool.SARSScraper.Models;
 
 namespace southafricantaxtool.Interface
 {
@@ -10,6 +11,5 @@ namespace southafricantaxtool.Interface
     {
         Task<List<TaxRebate>> GetAsync();
         Task SetAsync(List<TaxRebate> taxRebates);
-        Task UpdateRedisCache(List<TaxRebate> taxRebates);
     }
 }

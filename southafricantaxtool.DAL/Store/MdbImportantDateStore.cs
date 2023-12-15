@@ -7,19 +7,20 @@ using MongoDB.Driver;
 using Newtonsoft.Json;
 using southafricantaxtool.DAL.Configuration;
 using southafricantaxtool.DAL.Models;
+using southafricantaxtool.Interface;
 using southafricantaxtool.SARSScraper.Models;
 
-namespace southafricantaxtool.DAL.Services;
+namespace southafricantaxtool.DAL.Stores;
 
-public class MdbImportantDateService
+public class MdbImportantDateStore : IImportantDateStore
 {
     private readonly IMongoCollection<MdbImportantDates> _importantDatesCollection;
-    private readonly ILogger<MdbImportantDateService> _logger;
+    private readonly ILogger<MdbImportantDateStore> _logger;
     private readonly IDistributedCache _cache;
     private const string RedisKey = "important-dates";
     
-    public MdbImportantDateService(
-        IOptions<MongoDbConfiguration> sarsDatabaseSettings, ILogger<MdbImportantDateService> logger, IDistributedCache cache)
+    public MdbImportantDateStore(
+        IOptions<MongoDbConfiguration> sarsDatabaseSettings, ILogger<MdbImportantDateStore> logger, IDistributedCache cache)
     {
         _logger = logger;
         _cache = cache;
