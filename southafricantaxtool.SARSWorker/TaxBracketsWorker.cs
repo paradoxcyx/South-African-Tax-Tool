@@ -1,9 +1,9 @@
-using southafricantaxtool.DAL.Services;
+using southafricantaxtool.DAL.Stores;
 using southafricantaxtool.SARSScraper;
 
 namespace southafricantaxtool.SARSWorker;
 
-public class TaxBracketsWorker(ILogger<TaxBracketsWorker> logger, MdbTaxBracketService mdbTaxBracketService, TaxBracketScraper taxBracketScraper) : BackgroundService
+public class TaxBracketsWorker(ILogger<TaxBracketsWorker> logger, MdbTaxBracketStore mdbTaxBracketService, TaxBracketScraper taxBracketScraper) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {

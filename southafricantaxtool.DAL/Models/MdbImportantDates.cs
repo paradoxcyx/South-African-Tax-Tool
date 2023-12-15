@@ -1,6 +1,6 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-using southafricantaxtool.SARSScraper.Models;
+using southafricantaxtool.Interface.Models;
 
 namespace southafricantaxtool.DAL.Models;
 

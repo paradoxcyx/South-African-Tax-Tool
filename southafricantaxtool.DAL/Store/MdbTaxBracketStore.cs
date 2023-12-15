@@ -1,33 +1,33 @@
 ﻿using System.Text;
-using Amazon.Runtime.Internal.Util;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
-using Newtonsoft.Json;
 using southafricantaxtool.DAL.Configuration;
 using southafricantaxtool.DAL.Models;
-using southafricantaxtool.SARSScraper.Models;
+using southafricantaxtool.Interface.Services;
+using southafricantaxtool.Interface.Models;
+using System.Text.Json;
 
-namespace southafricantaxtool.DAL.Services;
+namespace southafricantaxtool.DAL.Stores;
 
-public class MdbTaxBracketService
+public class MdbTaxBracketStore : ITaxBracketStore
 {
     private readonly IMongoCollection<MdbTaxBrackets> _bracketsCollection;
-    private readonly ILogger<MdbTaxBracketService> _logger;
+    private readonly ILogger<MdbTaxBracketStore> _logger;
     private readonly IDistributedCache _cache;
     private const string RedisKey = "tax-brackets";
     
-    public MdbTaxBracketService(
-        IOptions<MongoDbConfiguration> bookStoreDatabaseSettings, ILogger<MdbTaxBracketService> logger, IDistributedCache cache)
+    public MdbTaxBracketStore(
+        IOptions<MongoDbConfiguration> sarsDatabaseSettings, ILogger<MdbTaxBracketStore> logger, IDistributedCache cache)
     {
         _logger = logger;
         _cache = cache;
         var mongoClient = new MongoClient(
-            bookStoreDatabaseSettings.Value.ConnectionString);
+            sarsDatabaseSettings.Value.ConnectionString);
 
         var mongoDatabase = mongoClient.GetDatabase(
-            bookStoreDatabaseSettings.Value.DatabaseName);
+            sarsDatabaseSettings.Value.DatabaseName);
 
         _bracketsCollection = mongoDatabase.GetCollection<MdbTaxBrackets>(
             MongoDbConsts.TaxBracketsCollectionName);
@@ -40,7 +40,7 @@ public class MdbTaxBracketService
         if (cachedData != null)
         {
             var json = Encoding.UTF8.GetString(cachedData);
-            var taxBrackets = JsonConvert.DeserializeObject<List<TaxBracket>>(json);
+            var taxBrackets = JsonSerializer.Deserialize<List<TaxBracket>>(json);
 
             if (taxBrackets != null)
             {
@@ -91,7 +91,7 @@ public class MdbTaxBracketService
             AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(30)
         };
 
-        await _cache.SetAsync(RedisKey, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(taxBrackets)), cacheOptions);
+        await _cache.SetAsync(RedisKey, Encoding.UTF8.GetBytes(JsonSerializer.Serialize(taxBrackets)), cacheOptions);
     }
 
 }

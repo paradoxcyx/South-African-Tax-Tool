@@ -1,18 +1,21 @@
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34309.116
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "southafricantaxtool.API", "southafricantaxtool.API\southafricantaxtool.API.csproj", "{477B2E1F-F3E0-49DD-9942-8B345A4F015C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "southafricantaxtool.API", "southafricantaxtool.API\southafricantaxtool.API.csproj", "{477B2E1F-F3E0-49DD-9942-8B345A4F015C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "southafricantaxtool.SARSScraper", "southafricantaxtool.SARSScraper\southafricantaxtool.SARSScraper.csproj", "{BF4CE692-F0FA-45B2-B82C-05D899A94C65}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "southafricantaxtool.BL", "southafricantaxtool.BL\southafricantaxtool.BL.csproj", "{2D7D3DB8-3471-4A58-B6CF-7113261CE586}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "southafricantaxtool.BL", "southafricantaxtool.BL\southafricantaxtool.BL.csproj", "{2D7D3DB8-3471-4A58-B6CF-7113261CE586}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "southafricantaxtool.SARSWorker", "southafricantaxtool.SARSWorker\southafricantaxtool.SARSWorker.csproj", "{178A95F6-5003-4995-8514-A1C1045629F2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "southafricantaxtool.SARSWorker", "southafricantaxtool.SARSWorker\southafricantaxtool.SARSWorker.csproj", "{178A95F6-5003-4995-8514-A1C1045629F2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "southafricantaxtool.DAL", "southafricantaxtool.DAL\southafricantaxtool.DAL.csproj", "{8876AF73-CAEE-43B7-A1C1-FD6C3F65567B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "southafricantaxtool.Tests", "southafricantaxtool.Tests\southafricantaxtool.Tests.csproj", "{22B30993-BB6E-4F00-8A63-BA61FAEDD23D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "southafricantaxtool.Interface", "southafricantaxtool.Interface\southafricantaxtool.Interface.csproj", "{FDF7FE13-2B81-403F-AE30-F45290A7AF9E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -44,6 +47,10 @@ Global
 		{22B30993-BB6E-4F00-8A63-BA61FAEDD23D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{22B30993-BB6E-4F00-8A63-BA61FAEDD23D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{22B30993-BB6E-4F00-8A63-BA61FAEDD23D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FDF7FE13-2B81-403F-AE30-F45290A7AF9E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FDF7FE13-2B81-403F-AE30-F45290A7AF9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FDF7FE13-2B81-403F-AE30-F45290A7AF9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FDF7FE13-2B81-403F-AE30-F45290A7AF9E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

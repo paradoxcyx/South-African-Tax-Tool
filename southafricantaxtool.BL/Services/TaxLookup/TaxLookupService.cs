@@ -1,5 +1,5 @@
-﻿using southafricantaxtool.SARSScraper.Enums;
-using southafricantaxtool.SARSScraper.Models;
+﻿using southafricantaxtool.Interface.Enums;
+using southafricantaxtool.Interface.Models;
 
 namespace southafricantaxtool.BL.Services.TaxLookup;
 

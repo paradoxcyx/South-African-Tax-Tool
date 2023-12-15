@@ -3,30 +3,31 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
-using Newtonsoft.Json;
 using southafricantaxtool.DAL.Configuration;
 using southafricantaxtool.DAL.Models;
-using southafricantaxtool.SARSScraper.Models;
+using southafricantaxtool.Interface.Services;
+using southafricantaxtool.Interface.Models;
+using System.Text.Json;
 
-namespace southafricantaxtool.DAL.Services;
+namespace southafricantaxtool.DAL.Stores;
 
-public class MdbTaxRebateService
+public class MdbTaxRebateStore : ITaxRebateStore
 {
     private readonly IMongoCollection<MdbTaxRebates> _rebatesCollection;
-    private readonly ILogger<MdbTaxRebateService> _logger;
+    private readonly ILogger<MdbTaxRebateStore> _logger;
     private readonly IDistributedCache _cache;
     private const string RedisKey = "tax-rebates";
     
-    public MdbTaxRebateService(
-        IOptions<MongoDbConfiguration> bookStoreDatabaseSettings, ILogger<MdbTaxRebateService> logger, IDistributedCache cache)
+    public MdbTaxRebateStore(
+        IOptions<MongoDbConfiguration> sarsDatabaseSettings, ILogger<MdbTaxRebateStore> logger, IDistributedCache cache)
     {
         _logger = logger;
         _cache = cache;
         var mongoClient = new MongoClient(
-            bookStoreDatabaseSettings.Value.ConnectionString);
+            sarsDatabaseSettings.Value.ConnectionString);
 
         var mongoDatabase = mongoClient.GetDatabase(
-            bookStoreDatabaseSettings.Value.DatabaseName);
+            sarsDatabaseSettings.Value.DatabaseName);
 
         _rebatesCollection = mongoDatabase.GetCollection<MdbTaxRebates>(
             MongoDbConsts.TaxRebatesCollectionName);
@@ -39,7 +40,7 @@ public class MdbTaxRebateService
         if (cachedData != null)
         {
             var json = Encoding.UTF8.GetString(cachedData);
-            var taxRebates = JsonConvert.DeserializeObject<List<TaxRebate>>(json);
+            var taxRebates = JsonSerializer.Deserialize<List<TaxRebate>>(json);
 
             if (taxRebates != null)
             {
@@ -88,6 +89,6 @@ public class MdbTaxRebateService
             AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(30)
         };
 
-        await _cache.SetAsync(RedisKey, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(taxRebates)), cacheOptions);
+        await _cache.SetAsync(RedisKey, Encoding.UTF8.GetBytes(JsonSerializer.Serialize(taxRebates)), cacheOptions);
     }
 }

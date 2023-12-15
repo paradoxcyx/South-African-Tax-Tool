@@ -10,10 +10,11 @@
       <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
       <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.0" />
       <PackageReference Include="MongoDB.Driver" Version="2.23.0" />
+      <PackageReference Include="System.Text.Json" Version="8.0.0" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\southafricantaxtool.SARSScraper\southafricantaxtool.SARSScraper.csproj" />
+      <ProjectReference Include="..\southafricantaxtool.Interface\southafricantaxtool.Interface.csproj" />
     </ItemGroup>
 
     <ItemGroup>

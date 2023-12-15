@@ -1,5 +1,5 @@
 ﻿using HtmlAgilityPack;
-using southafricantaxtool.SARSScraper.Models;
+using southafricantaxtool.Interface.Models;
 using southafricantaxtool.SARSScraper.Utilities;
 
 namespace southafricantaxtool.SARSScraper;

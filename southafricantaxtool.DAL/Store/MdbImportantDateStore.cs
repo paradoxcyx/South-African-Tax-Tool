@@ -1,25 +1,25 @@
-﻿using System.Linq.Expressions;
-using System.Text;
+﻿using System.Text;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
-using Newtonsoft.Json;
 using southafricantaxtool.DAL.Configuration;
 using southafricantaxtool.DAL.Models;
-using southafricantaxtool.SARSScraper.Models;
+using southafricantaxtool.Interface.Services;
+using southafricantaxtool.Interface.Models;
+using System.Text.Json;
 
-namespace southafricantaxtool.DAL.Services;
+namespace southafricantaxtool.DAL.Stores;
 
-public class MdbImportantDateService
+public class MdbImportantDateStore : IImportantDateStore
 {
     private readonly IMongoCollection<MdbImportantDates> _importantDatesCollection;
-    private readonly ILogger<MdbImportantDateService> _logger;
+    private readonly ILogger<MdbImportantDateStore> _logger;
     private readonly IDistributedCache _cache;
     private const string RedisKey = "important-dates";
     
-    public MdbImportantDateService(
-        IOptions<MongoDbConfiguration> sarsDatabaseSettings, ILogger<MdbImportantDateService> logger, IDistributedCache cache)
+    public MdbImportantDateStore(
+        IOptions<MongoDbConfiguration> sarsDatabaseSettings, ILogger<MdbImportantDateStore> logger, IDistributedCache cache)
     {
         _logger = logger;
         _cache = cache;
@@ -40,7 +40,7 @@ public class MdbImportantDateService
         if (cachedData != null)
         {
             var json = Encoding.UTF8.GetString(cachedData);
-            var dates = JsonConvert.DeserializeObject<List<ImportantDate>>(json);
+            var dates = JsonSerializer.Deserialize<List<ImportantDate>>(json);
 
             if (dates != null)
             {
@@ -101,6 +101,6 @@ public class MdbImportantDateService
             AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(30)
         };
 
-        await _cache.SetAsync(RedisKey, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(importantDates)), cacheOptions);
+        await _cache.SetAsync(RedisKey, Encoding.UTF8.GetBytes(JsonSerializer.Serialize(importantDates)), cacheOptions);
     }
 }
