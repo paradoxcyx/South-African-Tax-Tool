@@ -7,16 +7,17 @@ using southafricantaxtool.DAL.Configuration;
 using southafricantaxtool.DAL.Models;
 using southafricantaxtool.Interface.Services;
 using southafricantaxtool.Interface.Models;
-using System.Text.Json;
+using Newtonsoft.Json;
 
 namespace southafricantaxtool.DAL.Stores;
 
-public class MdbTaxRebateStore : ITaxRebateStore
+public class MdbTaxRebateStore : Store, IStore<TaxRebate>
 {
     private readonly IMongoCollection<MdbTaxRebates> _rebatesCollection;
     private readonly ILogger<MdbTaxRebateStore> _logger;
     private readonly IDistributedCache _cache;
-    private const string RedisKey = "tax-rebates";
+    
+    protected override string RedisKey => "tax-rebates";
     
     public MdbTaxRebateStore(
         IOptions<MongoDbConfiguration> sarsDatabaseSettings, ILogger<MdbTaxRebateStore> logger, IDistributedCache cache)
@@ -33,14 +34,14 @@ public class MdbTaxRebateStore : ITaxRebateStore
             MongoDbConsts.TaxRebatesCollectionName);
     }
 
-    public async Task<List<TaxRebate>> GetAsync()
+    public async Task<List<TaxRebate>> GetAsync(Func<TaxRebate, bool>? filter = null)
     {
         var cachedData = await _cache.GetAsync(RedisKey);
 
         if (cachedData != null)
         {
             var json = Encoding.UTF8.GetString(cachedData);
-            var taxRebates = JsonSerializer.Deserialize<List<TaxRebate>>(json);
+            var taxRebates = JsonConvert.DeserializeObject<List<TaxRebate>>(json);
 
             if (taxRebates != null)
             {
@@ -89,6 +90,6 @@ public class MdbTaxRebateStore : ITaxRebateStore
             AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(30)
         };
 
-        await _cache.SetAsync(RedisKey, Encoding.UTF8.GetBytes(JsonSerializer.Serialize(taxRebates)), cacheOptions);
+        await _cache.SetAsync(RedisKey, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(taxRebates)), cacheOptions);
     }
 }

@@ -4,6 +4,7 @@ using southafricantaxtool.API.Models.Tax.CalculateTax;
 using southafricantaxtool.API.Models.Tax.CalculateTaxMetrics;
 using southafricantaxtool.BL.Services.TaxLookup;
 using southafricantaxtool.BL.TaxCalculation;
+using southafricantaxtool.Interface.Models;
 using southafricantaxtool.Interface.Services;
 
 namespace southafricantaxtool.API.Controllers
@@ -13,8 +14,8 @@ namespace southafricantaxtool.API.Controllers
     public class TaxController(ILogger<TaxController> logger, 
         ITaxCalculationService taxCalculationService, 
         ITaxLookupService taxLookupService, 
-        ITaxBracketStore taxBracketStore, 
-        ITaxRebateStore taxRebateStore) : ControllerBase
+        IStore<TaxBracket> taxBracketStore, 
+        IStore<TaxRebate> taxRebateStore) : ControllerBase
     {
         [HttpPost("CalculateTax")]
         public async Task<IActionResult> CalculateTax([FromBody] CalculateTaxInput input)

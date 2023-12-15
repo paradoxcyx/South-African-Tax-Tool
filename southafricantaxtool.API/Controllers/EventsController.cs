@@ -9,7 +9,7 @@ namespace southafricantaxtool.API.Controllers;
 [ApiController]
 [Route("[controller]")]
 public class EventsController(ILogger<EventsController> logger, 
-    IImportantDateStore importantDateStore) : ControllerBase
+    IStore<ImportantDate> importantDateStore) : ControllerBase
 {
     [HttpPost("ImportantDates")]
     public async Task<IActionResult> ImportantDates([FromBody] ImportantDatesInput input)

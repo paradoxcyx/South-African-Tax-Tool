@@ -7,17 +7,18 @@ using southafricantaxtool.DAL.Configuration;
 using southafricantaxtool.DAL.Models;
 using southafricantaxtool.Interface.Services;
 using southafricantaxtool.Interface.Models;
-using System.Text.Json;
+using Newtonsoft.Json;
 
 namespace southafricantaxtool.DAL.Stores;
 
-public class MdbImportantDateStore : IImportantDateStore
+public class MdbImportantDateStore : Store, IStore<ImportantDate>
 {
     private readonly IMongoCollection<MdbImportantDates> _importantDatesCollection;
     private readonly ILogger<MdbImportantDateStore> _logger;
     private readonly IDistributedCache _cache;
-    private const string RedisKey = "important-dates";
-    
+
+    protected override string RedisKey => "important-dates";
+
     public MdbImportantDateStore(
         IOptions<MongoDbConfiguration> sarsDatabaseSettings, ILogger<MdbImportantDateStore> logger, IDistributedCache cache)
     {
@@ -40,7 +41,7 @@ public class MdbImportantDateStore : IImportantDateStore
         if (cachedData != null)
         {
             var json = Encoding.UTF8.GetString(cachedData);
-            var dates = JsonSerializer.Deserialize<List<ImportantDate>>(json);
+            var dates = JsonConvert.DeserializeObject<List<ImportantDate>>(json);
 
             if (dates != null)
             {
@@ -101,6 +102,6 @@ public class MdbImportantDateStore : IImportantDateStore
             AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(30)
         };
 
-        await _cache.SetAsync(RedisKey, Encoding.UTF8.GetBytes(JsonSerializer.Serialize(importantDates)), cacheOptions);
+        await _cache.SetAsync(RedisKey, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(importantDates)), cacheOptions);
     }
 }

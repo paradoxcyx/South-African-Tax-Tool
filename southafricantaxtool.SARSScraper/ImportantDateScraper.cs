@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using System.Web;
 using HtmlAgilityPack;
+using Newtonsoft.Json;
 using southafricantaxtool.Interface.Models;
 
 namespace southafricantaxtool.SARSScraper;
@@ -31,7 +32,7 @@ public class ImportantDateScraper : Scraper
 
         decodedImportantDates = decodedImportantDates.Replace("\\t", string.Empty);
         // Deserialize JSON string
-        var dates = JsonSerializer.Deserialize<List<ImportantDate>>(decodedImportantDates);
+        var dates = JsonConvert.DeserializeObject<List<ImportantDate>>(decodedImportantDates);
 
         return dates;
         

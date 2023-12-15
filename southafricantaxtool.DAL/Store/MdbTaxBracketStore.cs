@@ -7,16 +7,18 @@ using southafricantaxtool.DAL.Configuration;
 using southafricantaxtool.DAL.Models;
 using southafricantaxtool.Interface.Services;
 using southafricantaxtool.Interface.Models;
-using System.Text.Json;
+using Newtonsoft.Json;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace southafricantaxtool.DAL.Stores;
 
-public class MdbTaxBracketStore : ITaxBracketStore
+public class MdbTaxBracketStore : Store, IStore<TaxBracket>
 {
     private readonly IMongoCollection<MdbTaxBrackets> _bracketsCollection;
     private readonly ILogger<MdbTaxBracketStore> _logger;
     private readonly IDistributedCache _cache;
-    private const string RedisKey = "tax-brackets";
+    
+    protected override string RedisKey => "tax-brackets";
     
     public MdbTaxBracketStore(
         IOptions<MongoDbConfiguration> sarsDatabaseSettings, ILogger<MdbTaxBracketStore> logger, IDistributedCache cache)
@@ -33,14 +35,14 @@ public class MdbTaxBracketStore : ITaxBracketStore
             MongoDbConsts.TaxBracketsCollectionName);
     }
 
-    public async Task<List<TaxBracket>> GetAsync()
+    public async Task<List<TaxBracket>> GetAsync(Func<TaxBracket, bool>? filter = null)
     {
         var cachedData = await _cache.GetAsync(RedisKey);
 
         if (cachedData != null)
         {
             var json = Encoding.UTF8.GetString(cachedData);
-            var taxBrackets = JsonSerializer.Deserialize<List<TaxBracket>>(json);
+            var taxBrackets = JsonConvert.DeserializeObject<List<TaxBracket>>(json);
 
             if (taxBrackets != null)
             {
@@ -91,7 +93,7 @@ public class MdbTaxBracketStore : ITaxBracketStore
             AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(30)
         };
 
-        await _cache.SetAsync(RedisKey, Encoding.UTF8.GetBytes(JsonSerializer.Serialize(taxBrackets)), cacheOptions);
+        await _cache.SetAsync(RedisKey, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(taxBrackets)), cacheOptions);
     }
 
 }
