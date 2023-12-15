@@ -10,15 +10,15 @@ using southafricantaxtool.SARSScraper.Models;
 
 namespace southafricantaxtool.DAL.Services;
 
-public class MdbTaxRebateService
+public class MdbTaxRebateStore
 {
     private readonly IMongoCollection<MdbTaxRebates> _rebatesCollection;
-    private readonly ILogger<MdbTaxRebateService> _logger;
+    private readonly ILogger<MdbTaxRebateStore> _logger;
     private readonly IDistributedCache _cache;
     private const string RedisKey = "tax-rebates";
     
-    public MdbTaxRebateService(
-        IOptions<MongoDbConfiguration> bookStoreDatabaseSettings, ILogger<MdbTaxRebateService> logger, IDistributedCache cache)
+    public MdbTaxRebateStore(
+        IOptions<MongoDbConfiguration> bookStoreDatabaseSettings, ILogger<MdbTaxRebateStore> logger, IDistributedCache cache)
     {
         _logger = logger;
         _cache = cache;

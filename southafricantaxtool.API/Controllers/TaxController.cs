@@ -13,8 +13,8 @@ namespace southafricantaxtool.API.Controllers
     public class TaxController(ILogger<TaxController> logger, 
         ITaxCalculationService taxCalculationService, 
         ITaxLookupService taxLookupService, 
-        MdbTaxBracketService mdbTaxBracketService, 
-        MdbTaxRebateService mdbTaxRebateService) : ControllerBase
+        MdbTaxBracketStore mdbTaxBracketService, 
+        MdbTaxRebateStore mdbTaxRebateService) : ControllerBase
     {
         [HttpPost("CalculateTax")]
         public async Task<IActionResult> CalculateTax([FromBody] CalculateTaxInput input)

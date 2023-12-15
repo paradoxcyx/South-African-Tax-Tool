@@ -11,15 +11,15 @@ using southafricantaxtool.SARSScraper.Models;
 
 namespace southafricantaxtool.DAL.Services;
 
-public class MdbTaxBracketService
+public class MdbTaxBracketStore
 {
     private readonly IMongoCollection<MdbTaxBrackets> _bracketsCollection;
-    private readonly ILogger<MdbTaxBracketService> _logger;
+    private readonly ILogger<MdbTaxBracketStore> _logger;
     private readonly IDistributedCache _cache;
     private const string RedisKey = "tax-brackets";
     
-    public MdbTaxBracketService(
-        IOptions<MongoDbConfiguration> bookStoreDatabaseSettings, ILogger<MdbTaxBracketService> logger, IDistributedCache cache)
+    public MdbTaxBracketStore(
+        IOptions<MongoDbConfiguration> bookStoreDatabaseSettings, ILogger<MdbTaxBracketStore> logger, IDistributedCache cache)
     {
         _logger = logger;
         _cache = cache;
