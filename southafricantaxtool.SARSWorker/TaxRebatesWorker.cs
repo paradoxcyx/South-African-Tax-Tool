@@ -1,9 +1,10 @@
-﻿using southafricantaxtool.DAL.Stores;
+﻿using southafricantaxtool.Interface;
+using southafricantaxtool.Interface.Models;
 using southafricantaxtool.SARSScraper;
 
 namespace southafricantaxtool.SARSWorker;
 
-public class TaxRebatesWorker(ILogger<TaxRebatesWorker> logger, MdbTaxRebateStore mdbTaxRebateService, TaxRebateScraper taxRebateScraper) : BackgroundService
+public class TaxRebatesWorker(ILogger<TaxRebatesWorker> logger, IStore<TaxRebate> mdbTaxRebateService, TaxRebateScraper taxRebateScraper) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {

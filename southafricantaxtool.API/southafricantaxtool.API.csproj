@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\southafricantaxtool.BL\southafricantaxtool.BL.csproj" />
+    <ProjectReference Include="..\southafricantaxtool.Caching\southafricantaxtool.Caching.csproj" />
     <ProjectReference Include="..\southafricantaxtool.DAL\southafricantaxtool.DAL.csproj" />
     <ProjectReference Include="..\southafricantaxtool.Interface\southafricantaxtool.Interface.csproj" />
   </ItemGroup>

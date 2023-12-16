@@ -2,7 +2,7 @@
 using southafricantaxtool.API.Models;
 using southafricantaxtool.API.Models.Events.ImportantDates;
 using southafricantaxtool.Interface.Models;
-using southafricantaxtool.Interface.Services;
+using southafricantaxtool.Interface;
 
 namespace southafricantaxtool.API.Controllers;
 

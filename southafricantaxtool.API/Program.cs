@@ -1,4 +1,5 @@
 using southafricantaxtool.BL;
+using southafricantaxtool.Caching;
 using southafricantaxtool.DAL;
 using southafricantaxtool.DAL.Configuration;
 
@@ -20,6 +21,7 @@ builder.Services.AddStackExchangeRedisCache(options =>
 builder.Services.Configure<MongoDbConfiguration>(builder.Configuration.GetSection("MongoDb"));
 
 builder.Services.AddBusinessLogicServices();
+builder.Services.AddCaching();
 builder.Services.AddDataAccessLayer();
 
 var app = builder.Build();

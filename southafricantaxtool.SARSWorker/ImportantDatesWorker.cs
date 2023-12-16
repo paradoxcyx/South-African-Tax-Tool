@@ -1,5 +1,5 @@
 ﻿using southafricantaxtool.Interface.Models;
-using southafricantaxtool.Interface.Services;
+using southafricantaxtool.Interface;
 using southafricantaxtool.SARSScraper;
 
 namespace southafricantaxtool.SARSWorker;

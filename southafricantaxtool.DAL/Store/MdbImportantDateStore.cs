@@ -1,29 +1,30 @@
 ﻿using System.Text;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using southafricantaxtool.DAL.Configuration;
 using southafricantaxtool.DAL.Models;
-using southafricantaxtool.Interface.Services;
+using southafricantaxtool.Interface;
 using southafricantaxtool.Interface.Models;
-using Newtonsoft.Json;
 
 namespace southafricantaxtool.DAL.Stores;
 
-public class MdbImportantDateStore : Store, IStore<ImportantDate>
+public class MdbImportantDateStore : IStore<ImportantDate>
 {
     private readonly IMongoCollection<MdbImportantDates> _importantDatesCollection;
     private readonly ILogger<MdbImportantDateStore> _logger;
-    private readonly IDistributedCache _cache;
 
-    protected override string RedisKey => "important-dates";
+    private readonly IStore<ImportantDate> _redisCache;
+    
 
     public MdbImportantDateStore(
-        IOptions<MongoDbConfiguration> sarsDatabaseSettings, ILogger<MdbImportantDateStore> logger, IDistributedCache cache)
+        IOptions<MongoDbConfiguration> sarsDatabaseSettings, ILogger<MdbImportantDateStore> logger, IDistributedCache cache, [FromKeyedServices("redis")] IStore<ImportantDate> redisCache)
     {
         _logger = logger;
-        _cache = cache;
+        _redisCache = redisCache;
+        
         var mongoClient = new MongoClient(
             sarsDatabaseSettings.Value.ConnectionString);
 
@@ -34,31 +35,17 @@ public class MdbImportantDateStore : Store, IStore<ImportantDate>
             MongoDbConsts.ImportDatesCollectionName);
     }
 
-    public async Task<List<ImportantDate>> GetAsync(Func<ImportantDate, bool>? filter = null)
+    public async Task<List<ImportantDate>?> GetAsync(Func<ImportantDate, bool>? filter = null)
     {
-        var cachedData = await _cache.GetAsync(RedisKey);
+        var cachedData = await _redisCache.GetAsync(filter);
 
-        if (cachedData != null)
-        {
-            var json = Encoding.UTF8.GetString(cachedData);
-            var dates = JsonConvert.DeserializeObject<List<ImportantDate>>(json);
-
-            if (dates != null)
-            {
-                if (filter == null) return dates;
-
-                dates = dates.Where(filter).ToList();
-            
-                return dates;
-            }
-        }
-        
+        if (cachedData != null) return cachedData;
         
         var doc = await _importantDatesCollection.Find(_ => true).FirstOrDefaultAsync();
 
         if (doc != null)
         {
-            await UpdateRedisCache(doc.ImportantDates);
+            await _redisCache.SetAsync(doc.ImportantDates);
             
             if (filter == null) return doc.ImportantDates;
             
@@ -84,24 +71,15 @@ public class MdbImportantDateStore : Store, IStore<ImportantDate>
                 ImportantDates = importantDates
             };
             await _importantDatesCollection.InsertOneAsync(doc);
-            await UpdateRedisCache(importantDates);
+            await _redisCache.SetAsync(importantDates);
             return;
         }
 
         doc.ImportantDates = importantDates;
 
-        await UpdateRedisCache(doc.ImportantDates);
+        await _redisCache.SetAsync(doc.ImportantDates);
 
         await _importantDatesCollection.FindOneAndReplaceAsync(d => d.Id == doc.Id, doc);
     }
 
-    private async Task UpdateRedisCache(List<ImportantDate> importantDates)
-    {
-        var cacheOptions = new DistributedCacheEntryOptions
-        {
-            AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(30)
-        };
-
-        await _cache.SetAsync(RedisKey, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(importantDates)), cacheOptions);
-    }
 }

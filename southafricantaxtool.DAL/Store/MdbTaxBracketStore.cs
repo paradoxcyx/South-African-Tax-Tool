@@ -1,30 +1,30 @@
 ﻿using System.Text;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using southafricantaxtool.DAL.Configuration;
 using southafricantaxtool.DAL.Models;
-using southafricantaxtool.Interface.Services;
+using southafricantaxtool.Interface;
 using southafricantaxtool.Interface.Models;
 using Newtonsoft.Json;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace southafricantaxtool.DAL.Stores;
 
-public class MdbTaxBracketStore : Store, IStore<TaxBracket>
+public class MdbTaxBracketStore : IStore<TaxBracket>
 {
     private readonly IMongoCollection<MdbTaxBrackets> _bracketsCollection;
     private readonly ILogger<MdbTaxBracketStore> _logger;
-    private readonly IDistributedCache _cache;
+    private readonly IStore<TaxBracket> _redisCache;
     
-    protected override string RedisKey => "tax-brackets";
     
     public MdbTaxBracketStore(
-        IOptions<MongoDbConfiguration> sarsDatabaseSettings, ILogger<MdbTaxBracketStore> logger, IDistributedCache cache)
+        IOptions<MongoDbConfiguration> sarsDatabaseSettings, ILogger<MdbTaxBracketStore> logger, [FromKeyedServices("redis")] IStore<TaxBracket> redisCache)
     {
         _logger = logger;
-        _cache = cache;
+        _redisCache = redisCache;
         var mongoClient = new MongoClient(
             sarsDatabaseSettings.Value.ConnectionString);
 
@@ -35,26 +35,17 @@ public class MdbTaxBracketStore : Store, IStore<TaxBracket>
             MongoDbConsts.TaxBracketsCollectionName);
     }
 
-    public async Task<List<TaxBracket>> GetAsync(Func<TaxBracket, bool>? filter = null)
+    public async Task<List<TaxBracket>?> GetAsync(Func<TaxBracket, bool>? filter = null)
     {
-        var cachedData = await _cache.GetAsync(RedisKey);
+        var cachedData = await _redisCache.GetAsync(filter);
 
-        if (cachedData != null)
-        {
-            var json = Encoding.UTF8.GetString(cachedData);
-            var taxBrackets = JsonConvert.DeserializeObject<List<TaxBracket>>(json);
-
-            if (taxBrackets != null)
-            {
-                return taxBrackets;
-            }
-        }
+        if (cachedData != null) return cachedData;
         
         var doc = await _bracketsCollection.Find(_ => true).FirstOrDefaultAsync();
 
         if (doc != null)
         {
-            await UpdateRedisCache(doc.TaxBrackets);
+            await _redisCache.SetAsync(doc.TaxBrackets);
             return doc.TaxBrackets;
         }
         
@@ -75,25 +66,16 @@ public class MdbTaxBracketStore : Store, IStore<TaxBracket>
                 TaxBrackets = taxBrackets
             };
             await _bracketsCollection.InsertOneAsync(doc);
-            await UpdateRedisCache(taxBrackets);
+            await _redisCache.SetAsync(taxBrackets);
             return;
         }
 
         doc.TaxBrackets = taxBrackets;
 
-        await UpdateRedisCache(doc.TaxBrackets);
+        await _redisCache.SetAsync(doc.TaxBrackets);
         
         await _bracketsCollection.FindOneAndReplaceAsync(d => d.Id == doc.Id, doc);
     }
     
-    private async Task UpdateRedisCache(List<TaxBracket> taxBrackets)
-    {
-        var cacheOptions = new DistributedCacheEntryOptions
-        {
-            AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(30)
-        };
-
-        await _cache.SetAsync(RedisKey, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(taxBrackets)), cacheOptions);
-    }
 
 }
